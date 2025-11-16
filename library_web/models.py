@@ -1,0 +1,67 @@
+from django.db import models
+from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, PermissionsMixin
+import uuid
+from django.utils import timezone
+
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        if not email:
+            raise ValueError("Email is required")
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)  # securely hashes the password
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        return self.create_user(username, email, password, **extra_fields)
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    username = models.CharField(max_length=30, unique=True)
+    email = models.EmailField(unique=True)
+    first_name = models.CharField(max_length=150, blank=True, null=True)
+    last_name = models.CharField(max_length=150, blank=True, null=True)
+    is_active = models.BooleanField(default=True)
+    is_staff = models.BooleanField(default=False)
+    is_superuser = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['email']
+
+    def __str__(self):
+        return self.username
+
+# Create your models here.
+class EBooksModel(models.Model):
+    title = models.CharField(max_length=200)
+    subtitle = models.CharField(max_length=255, blank=True)
+    author = models.CharField(max_length=200)
+    publisher = models.CharField(max_length=200)
+    description = models.TextField()
+    category = models.CharField(max_length=50)
+    image = models.ImageField(upload_to="books/")
+    rating = models.IntegerField(default=0)
+    book_pdf = models.FileField(upload_to="pdfs/", null=True, blank=True)
+    book_audio = models.FileField(upload_to="audio/", null=True, blank=True)
+    is_borrowed = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.title}"
+    
+class BorrowRecord(models.Model):
+    student_id = models.CharField(max_length=50)
+    email = models.EmailField()
+    borrow_date = models.DateField(auto_now_add=True)
+    return_date = models.DateField()
+    book = models.ForeignKey("EBooksModel", on_delete=models.CASCADE)
+    tracking_code = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
+    borrowed_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    
+    def __str__(self):
+        return f"{self.student_id} borrowed {self.book.title}"

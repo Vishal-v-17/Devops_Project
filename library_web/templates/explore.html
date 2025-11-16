@@ -1,0 +1,456 @@
+<style>
+.category-title {
+    font-size: 2rem;
+    color: #1e3c72;
+}
+
+.category-underline {
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    margin: 8px auto 30px auto;
+    border-radius: 10px;
+}
+
+.modern-card {
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.modern-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.card-img-top-modern {
+    height: 220px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.modern-btn {
+    border-radius: 50px !important;
+    padding: 10px;
+}
+
+.modern-main-btn {
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    color: white;
+    border-radius: 50px;
+}
+</style>
+
+
+<section class="explore--category m-5">
+
+    {% regroup edu_books by category as category_groups %}
+
+    {% for category in category_groups %}
+    
+    <!-- Category Header -->
+    <div class="category-header mb-4">
+        <h2 class="text-center fw-bold category-title">
+            {{ category.grouper }}
+        </h2>
+        <div class="category-underline"></div>
+    </div>
+
+    <div class="container d-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
+        <div class="row">
+
+            {% for book in category.list %}
+            <div class="col-lg-4 col-md-6 mb-4 d-flex">
+
+                <div class="card shadow-lg border-0 rounded-4 w-100 modern-card">
+
+                    <!-- Book Image -->
+                    <div class="text-center p-3">
+                        <img src="{{ book.image.url }}" alt="{{ book.title }}"
+                            class="img-fluid rounded card-img-top-modern">
+                    </div>
+
+                    <!-- Content -->
+                    <div class="card-body px-4 pb-4 text-center">
+
+                        <h5 class="fw-bold book-title">
+                            <a href="{% url 'viewBook' book.id %}"
+                                class="text-decoration-none text-dark">
+                                {{ book.title }}
+                            </a>
+                        </h5>
+
+                        {% if book.summary %}
+                        <p class="text-muted mb-2">{{ book.summary|truncatechars:60 }}</p>
+                        {% endif %}
+
+                        <p class="mb-1"><strong>Description:</strong> {{ book.description|truncatechars:100 }}</p>
+                        <p class="mb-1"><strong>Pages:</strong> {{ book.pages }}</p>
+                        <p class="mb-3"><strong>Contributed By:</strong> {{ book.author }}</p>
+
+                        <!-- PDF Download -->
+                        {% if book.book_pdf %}
+                        <a href="{{ book.book_pdf.url }}" download 
+                           class="btn btn-outline-primary w-100 mb-2 modern-btn">
+                            📄 Download PDF
+                        </a>
+                        {% endif %}
+
+                        <!-- Audio Download -->
+                        {% if book.book_audio %}
+                        <a href="{{ book.book_audio.url }}" download
+                           class="btn btn-outline-success w-100 mb-3 modern-btn">
+                            🎧 Download Audio
+                        </a>
+                        {% endif %}
+                        <!-- View Details -->
+                        {% if book.is_borrowed %}
+
+                            <!-- Borrowed Button (Disabled) -->
+                            <button class="btn w-100 fw-semibold py-2 modern-main-btn mb-3"
+                                    style="background: gray; cursor: not-allowed;" disabled>
+                                Borrowed
+                            </button>
+
+                            {% comment %} {% if request.user.is_superuser %}
+                            <!-- Return Book Button -->
+                            <a href="{% url 'return_book' record.id %}" 
+                              class="btn btn-warning w-100 fw-semibold py-2 mb-3"
+                              style="border-radius: 50px;">
+                                Return Book
+                            </a>
+                            {% endif %} {% endcomment %}
+                        {% else %}
+                            <!-- Borrow Button -->
+                            <a href="{% url 'borrow_book' book.id %}"
+                              class="btn w-100 fw-semibold py-2 mb-3 modern-main-btn">
+                                Borrow
+                            </a>
+                        {% endif %}
+
+                        {% if request.user.is_superuser %}
+                        <div class="d-flex justify-content-between gap-3">
+
+                            <a href="{% url 'editBook' book.id %}"
+                               class="btn btn-warning fw-semibold py-2 w-50 modern-btn">
+                               Edit
+                            </a>
+
+                            <a href="{% url 'deleteBook' book.id %}"
+                               class="btn btn-danger fw-semibold py-2 w-50 modern-btn">
+                               Delete
+                            </a>
+
+                        </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    {% endfor %}
+
+</section>
+
+
+
+
+
+
+{% comment %} {% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+</head>
+  <body>
+     {% endcomment %}
+    {% comment %} <!-- Navbar -->
+    <section class="navbar--section">
+      <nav class="navbar navbar-expand-lg ">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">E-Library</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class=" nav-link " aria-current="page" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link active" href="/explore">Explore</a>
+              </li>
+              {% if user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link" href="logout">Logout</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="register">SignUp/Login</a>
+              </li>
+              {% endif %}
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </section> {% endcomment %}
+<!-- 
+    <section class="explore--section">
+        <div class="input-group flex-nowrap">
+        <span class="input-group-text" id="addon-wrapping">@</span>
+        <input type="text" class="form-control" placeholder="Search by Name">
+        </div>
+    </section> -->
+
+    {% comment %} <section class="explore--education--category m-5 ">
+        <h2>Education</h2>
+        <div class="container py-5">
+            <div class="row">
+                {% for book in edu_books %}
+                <div class="col-lg-4 col-md-6 mb-4 d-flex">
+                    <div class="card shadow-lg border-0 rounded-4 w-100" style="overflow: hidden;">
+
+                        <!-- Book Image -->
+                        <div class="text-center p-3">
+                            <img src="{{ book.image.url }}" alt="{{ book.title }}"
+                                class="img-fluid rounded"
+                                style="height: 220px; width: 100%; object-fit: cover;">
+                        </div>
+
+                       <!-- Content -->
+                        <div class="card-body px-4 pb-4 text-center">
+
+                            <h5 class="fw-bold" style="color: #1e3c72;">
+                                <a href="{% url 'viewBook' book.id %}" 
+                                  class="text-decoration-none" 
+                                  style="color: inherit;">
+                                    {{ book.title }}
+                                </a>
+                            </h5>
+
+                            {% if book.summary %}
+                            <p class="text-muted mb-2">{{ book.summary|truncatechars:60 }}</p>
+                            {% endif %}
+
+                            <p class="mb-1"><strong>Description:</strong> {{ book.description|truncatechars:100 }}</p>
+                            <p class="mb-1"><strong>Pages:</strong> {{ book.pages }}</p>
+                            <p class="mb-1"><strong>Category:</strong> {{ book.category }}</p>
+                            <p class="mb-3"><strong>Contributed By:</strong> {{ book.author }}</p>
+
+                            <!-- View Details -->
+                            <a href="{% url 'viewBook' book.id %}"
+                              class="btn w-100 fw-semibold py-2 mb-3"
+                              style="background: linear-gradient(90deg, #1e3c72, #2a5298); 
+                                      color: white; border-radius: 50px;">
+                                View Details
+                            </a>
+
+                            {% if request.user.is_superuser %}
+                            <!-- Edit + Delete Row -->
+                            <div class="d-flex justify-content-between gap-3">
+
+                                <!-- Edit -->
+                                <a href="{% url 'editBook' book.id %}"
+                                  class="btn btn-warning fw-semibold py-2 w-50"
+                                  style="border-radius: 50px;">
+                                  Edit
+                                </a>
+
+                                <!-- Delete -->
+                                <a href="{% url 'deleteBook' book.id %}"
+                                  class="btn btn-danger fw-semibold py-2 w-50"
+                                  style="border-radius: 50px;">
+                                  Delete
+                                </a>
+
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+   <section class="explore--education--category m-5 ">
+        <h2>Fiction</h2>
+            <div class="container">
+            <div class="row">
+              {% for book in fiction_books %}
+                  <div class="col-lg-4 col-md-6 mb-4 d-flex">
+                    <div class="card shadow-lg border-0 rounded-4 w-100" style="overflow: hidden;">
+
+                        <!-- Book Image -->
+                        <div class="text-center p-3">
+                            <img src="{{ book.image.url }}" alt="{{ book.title }}"
+                                class="img-fluid rounded"
+                                style="height: 220px; width: 100%; object-fit: cover;">
+                        </div>
+
+                       <!-- Content -->
+                        <div class="card-body px-4 pb-4 text-center">
+
+                            <h5 class="fw-bold" style="color: #1e3c72;">
+                                <a href="{% url 'viewBook' book.id %}" 
+                                  class="text-decoration-none" 
+                                  style="color: inherit;">
+                                    {{ book.title }}
+                                </a>
+                            </h5>
+
+                            {% if book.summary %}
+                            <p class="text-muted mb-2">{{ book.summary|truncatechars:60 }}</p>
+                            {% endif %}
+
+                            <p class="mb-1"><strong>Description:</strong> {{ book.description|truncatechars:100 }}</p>
+                            <p class="mb-1"><strong>Pages:</strong> {{ book.pages }}</p>
+                            <p class="mb-1"><strong>Category:</strong> {{ book.category }}</p>
+                            <p class="mb-3"><strong>Contributed By:</strong> {{ book.author }}</p>
+
+                            <!-- PDF Download (only if exists) -->
+                              {% if book.book_pdf %}
+                              <a href="{{ book.book_pdf.url }}" download
+                                class="btn btn-outline-primary w-100 mb-2"
+                                style="border-radius: 50px;">
+                                  📄 Download PDF
+                              </a>
+                              {% endif %}
+
+                              <!-- Audio Download (only if exists) -->
+                              {% if book.book_audio %}
+                              <a href="{{ book.book_audio.url }}" download
+                                class="btn btn-outline-success w-100 mb-3"
+                                style="border-radius: 50px;">
+                                  🎧 Download Audio
+                              </a>
+                              {% endif %}
+                            <!-- View Details -->
+                            <a href="{% url 'viewBook' book.id %}"
+                              class="btn w-100 fw-semibold py-2 mb-3"
+                              style="background: linear-gradient(90deg, #1e3c72, #2a5298); 
+                                      color: white; border-radius: 50px;">
+                                View Details
+                            </a>
+
+                            {% if request.user.is_superuser %}
+                            <!-- Edit + Delete Row -->
+                            <div class="d-flex justify-content-between gap-3">
+
+                                <!-- Edit -->
+                                <a href="{% url 'editBook' book.id %}"
+                                  class="btn btn-warning fw-semibold py-2 w-50"
+                                  style="border-radius: 50px;">
+                                  Edit
+                                </a>
+
+                                <!-- Delete -->
+                                <a href="{% url 'deleteBook' book.id %}"
+                                  class="btn btn-danger fw-semibold py-2 w-50"
+                                  style="border-radius: 50px;">
+                                  Delete
+                                </a>
+
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                        </div>
+                    </div>
+                </div>  
+              {% endfor %}
+         </div>
+        </div>
+    </section>
+
+    <section class="explore--education--category m-5">
+        <h2>Science</h2>
+        <div class="container">
+            <div class="row">
+        {% for book in science_books %}  
+              <div class="col-lg-4 col-md-6 mb-4 d-flex">
+                    <div class="card shadow-lg border-0 rounded-4 w-100" style="overflow: hidden;">
+
+                        <!-- Book Image -->
+                        <div class="text-center p-3">
+                            <img src="{{ book.image.url }}" alt="{{ book.title }}"
+                                class="img-fluid rounded"
+                                style="height: 220px; width: 100%; object-fit: cover;">
+                        </div>
+
+                       <!-- Content -->
+                        <div class="card-body px-4 pb-4 text-center">
+
+                            <h5 class="fw-bold" style="color: #1e3c72;">
+                                <a href="{% url 'viewBook' book.id %}" 
+                                  class="text-decoration-none" 
+                                  style="color: inherit;">
+                                    {{ book.title }}
+                                </a>
+                            </h5>
+
+                            {% if book.summary %}
+                            <p class="text-muted mb-2">{{ book.summary|truncatechars:60 }}</p>
+                            {% endif %}
+
+                            <p class="mb-1"><strong>Description:</strong> {{ book.description|truncatechars:100 }}</p>
+                            <p class="mb-1"><strong>Pages:</strong> {{ book.pages }}</p>
+                            <p class="mb-1"><strong>Category:</strong> {{ book.category }}</p>
+                            <p class="mb-3"><strong>Contributed By:</strong> {{ book.author }}</p>
+
+                            <!-- View Details -->
+                            <a href="{% url 'viewBook' book.id %}"
+                              class="btn w-100 fw-semibold py-2 mb-3"
+                              style="background: linear-gradient(90deg, #1e3c72, #2a5298); 
+                                      color: white; border-radius: 50px;">
+                                View Details
+                            </a>
+
+                            {% if request.user.is_superuser %}
+                            <!-- Edit + Delete Row -->
+                            <div class="d-flex justify-content-between gap-3">
+
+                                <!-- Edit -->
+                                <a href="{% url 'editBook' book.id %}"
+                                  class="btn btn-warning fw-semibold py-2 w-50"
+                                  style="border-radius: 50px;">
+                                  Edit
+                                </a>
+
+                                <!-- Delete -->
+                                <a href="{% url 'deleteBook' book.id %}"
+                                  class="btn btn-danger fw-semibold py-2 w-50"
+                                  style="border-radius: 50px;">
+                                  Delete
+                                </a>
+
+                            </div>
+                            {% endif %}
+
+                        </div>
+
+                        </div>
+                    </div>
+                </div>
+        {% endfor %}
+         </div>
+        </div>
+    </section> {% endcomment %}
+
+    {% comment %} {% include 'footer.html' %} 
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  </body>
+</html> {% endcomment %}

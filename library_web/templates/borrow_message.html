@@ -1,0 +1,19 @@
+<div class="card p-4">
+    <h2>Borrow Request Successful!</h2>
+
+    <p><strong>Book:</strong> {{ record.book.title }}</p>
+    <p><strong>Student ID:</strong> {{ record.student_id }}</p>
+    <p><strong>Email:</strong> {{ record.email }}</p>
+    <p><strong>Borrowed Date:</strong> {{ record.borrow_date }}</p>
+    <p><strong>Return Date:<strong> {{ record.return_date }}</p>
+    <p><strong>Record ID:<strong> {{ record.id }}</p>
+
+    <h4>Your Tracking Code:</h4>
+    <div class="alert alert-info">
+        <strong>{{ record.tracking_code }}</strong>
+    </div>
+
+    <p>A confirmation email has been sent to <strong>{{ record.email }}</strong>.</p>
+
+    <a href="{% url 'home' %}" class="btn btn-success">Back to Home</a>
+</div>

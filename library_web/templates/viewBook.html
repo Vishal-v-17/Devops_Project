@@ -1,0 +1,63 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/contri.css' %}"/>
+</head>
+  <body>
+    <!-- Navbar -->
+    {% include 'navigation.html' %}
+
+    <!-- View Book -->
+    <section class="view-book-section py-5 bg-light">
+      <div class="container">
+        <div class="row justify-content-center">
+          <div class="col-lg-8">
+
+            <!-- View Book Page -->
+<section class="view-book-page py-5">
+  <div class="container">
+
+    <!-- Title Section -->
+    <div class="text-center mb-5">
+      <h1 class="display-4 fw-bold text-primary">{{ book.title }}</h1>
+      <p class="text-muted fs-5">Explore the details of this book below</p>
+      <div class="underline mx-auto mt-3"></div>
+    </div>
+
+    <!-- Book Details -->
+    <div class="book-details px-lg-5">
+      <div class="detail-item mb-4">
+        <h4 class="fw-semibold text-dark">📚 Category</h4>
+        <p class="fs-5 text-secondary">{{ book.category }}</p>
+      </div>
+
+      <div class="detail-item mb-4">
+        <h4 class="fw-semibold text-dark">📝 Description</h4>
+        <p class="fs-5 text-secondary lh-lg">{{ book.description }}</p>
+      </div>
+
+      <div class="detail-item mb-4">
+        <h4 class="fw-semibold text-dark">✍️ Author</h4>
+        <p class="fs-5 text-secondary">{{ book.author }}</p>
+      </div>
+    </div>
+
+    <!-- No Book Message -->
+    {% if books.count == 0 %}
+    <div class="text-center mt-5">
+      <h4 class="text-muted">No Books Contributed</h4>
+    </div>
+    {% endif %}
+          </div>
+        </div>
+      </div>
+    </section>
+    {% include 'footer.html'  %}
+  </body>
+</html>

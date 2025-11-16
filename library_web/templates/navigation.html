@@ -1,0 +1,162 @@
+<!-- Custom CSS -->
+<style>
+.user-btn {
+  background-color: blue;      /* blue background */
+  color: white;                /* white icon */
+  border-radius: 50%;          /* circular button */
+  width: 50px;                 /* increased width */
+  height: 50px;                /* increased height */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid white;     /* white border */
+  transition: background 0.3s, transform 0.2s;
+}
+.user-btn:hover {
+  transform: scale(1.05);
+}
+
+/* Remove dropdown arrow */
+.no-caret::after {
+    display: none !important;
+}
+
+/* Show dropdown on hover */
+.nav-item.dropdown:hover .dropdown-menu {
+    display: block !important;
+    margin-top: 0; /* Prevent jump */
+}
+
+/* Keep link active on hover */
+.dropdown-hover:hover {
+    color: #ffffff !important;
+}
+
+</style>
+
+
+<!-- Navbar -->
+<section class="navbar--section">
+  <nav class="navbar navbar-expand-lg navbar-dark shadow-sm"
+       style="background: linear-gradient(90deg, #1e3c72, #2a5298);">
+    <div class="container-fluid px-4">
+
+      <!-- Brand (Left) -->
+      <a class="navbar-brand fw-bold text-white fs-4" href="/">E-Library</a>
+
+      <!-- Mobile Toggle Button -->
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse"
+              data-bs-target="#navbarNav" aria-controls="navbarNav"
+              aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <!-- Center Content -->
+      <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+        <ul class="navbar-nav mb-2 mb-lg-0 text-center">
+          <li class="nav-item px-2">
+            <a class="nav-link text-white fw-semibold" href="/">Home</a>
+          </li>
+          <li class="nav-item dropdown px-2">
+    <a class="nav-link text-white fw-semibold no-caret dropdown-hover" 
+       href="#" 
+       id="booksDropdown" 
+       role="button">
+        Books
+    </a>
+
+    <ul class="dropdown-menu" aria-labelledby="booksDropdown">
+        <li><a class="dropdown-item" href="/">All Books</a></li>
+        <li><a class="dropdown-item" href="/education">Education</a></li>
+        <li><a class="dropdown-item" href="/fiction">Fiction</a></li>
+        <li><a class="dropdown-item" href="/non-fiction">Non-Fiction</a></li>
+        <li><a class="dropdown-item" href="/science">Science</a></li>
+        {% comment %} <li><hr class="dropdown-divider"></li> {% endcomment %} <!-- it is used for adding a drivider line between the class -->
+    </ul>
+</li>
+
+          <li class="nav-item px-2">
+            <a class="nav-link text-white fw-semibold" href="/">E-books</a>
+          </li>
+          <li class="nav-item px-2">
+            <a class="nav-link text-white fw-semibold" href="/">AudioBooks</a>
+          </li>
+          <!-- Removed Add Book from center -->
+        </ul>
+
+        <!-- Search Bar -->
+        <form class="d-flex justify-content-center mt-2" style="max-width: 400px; width: 100%;">
+          <input class="form-control me-2"
+                 type="search"
+                 name="q"
+                 placeholder="Search books..."
+                 aria-label="Search"
+                 style="background-color: #f1f5f9; border: none; border-radius: 20px; padding: 8px 15px;">
+          <button class="btn btn-light fw-semibold px-4 rounded-pill" type="submit">Search</button>
+        </form>
+      </div>
+
+      <!-- User Profile Dropdown (Right) -->
+      <div class="dropdown ms-3">
+        <a class="d-flex align-items-center justify-content-center user-btn dropdown-toggle"
+           href="#" role="button" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+          <i class="bi-person-circle fs-4"></i>
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
+          {% if user.is_authenticated %}
+          <li><a class="dropdown-item" href="#">{{ user.username }}</a></li>
+          <li><a class="dropdown-item" href="{% url 'addBook' user_id=user.id %}">Add Book</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
+          {% else %}
+          <li><a class="dropdown-item" href="/login">Login</a></li>
+          <li><hr class="dropdown-divider"></li>
+          <li><a class="dropdown-item" href="/register">Register</a></li>
+          {% endif %}
+        </ul>
+      </div>
+
+    </div>
+  </nav>
+</section>
+
+
+{% comment %} <!-- Navbar -->
+    <section class="navbar--section">
+      <nav class="navbar navbar-expand-lg ">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="">E-Library</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
+                  data-bs-target="#navbarNav" aria-controls="navbarNav" 
+                  aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="active nav-link " aria-current="page" href="/">Home</a>
+              </li>
+              <li class="nav-item">
+                <a class="active nav-link " aria-current="page" href="/">Categories</a>
+              </li>
+              {% if user.is_authenticated %}
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+              </li>
+              <li>
+                <a class="nav-link" href="{% url 'contri' user.id %}">Contributed</a>
+              </li>
+              {% else %}
+              <li class="nav-item">
+                <a class="nav-link" href="login">Login</a>
+              </li>
+              {% endif %}
+              <div class="d-flex ms-auto">
+                <input class="form-control me-2" type="search" name="q" placeholder="Search books..."aria-label="Search" style="background-color: #B1C381; color: white; border: 1px solid black;"/>
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+              </div>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </section> {% endcomment %}

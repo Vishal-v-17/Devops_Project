@@ -1,0 +1,85 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bootstrap demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}"/>
+    <link rel="stylesheet" href="{% static 'css/contri.css' %}"/>
+    <style>
+      *{
+        box-sizing: border-box;
+        margin: 0;
+      }
+    </style>
+</head>
+  <body>
+    <!-- Navbar -->
+    <section class="navbar--section">
+      <nav class="navbar navbar-expand-lg ">
+        <div class="container-fluid">
+          <a class="navbar-brand" href="#">E-Library</a>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+            <ul class="navbar-nav">
+              <li class="nav-item">
+                <a class="active nav-link " aria-current="page" href="/">Home</a>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+    </section>
+
+    <!-- View Book -->
+    <section class="contri--section">
+      <div class="container">
+            <div class="row">
+              
+            
+        {% for book in books %}
+        
+                  <div class="col-lg-4 ">
+                    <div class="card" style="height: 300px;">
+                    <div class="card-body">
+                        <h5 class="card-title text-center mb-3">{{book.title}}</h5>
+                        <p class="card-text">Description : {{ book.summary|truncatechars:50 }}</p>
+                        <p class="card-text">Pages : {{book.pages}}</p>
+                        <p class="card-text">Category : {{book.category}}</p>
+                        <p class="card-text">Contributed By : {{book.author}}</p>
+
+                        <a href="{{book.pdf.url}}" class="btn btn-primary">View Book</a>
+                        <a href="{% url 'deleteBook' book.id %}" class="btn btn-danger">Delete Book</a>
+                        <a href="{% url 'editBook' book.id %}" class="btn btn-danger">Edit Details</a>
+                    </div>
+                  </div>
+                </div>
+           
+        
+        {% endfor %}
+        </div>
+        {% if books.count == 0 %}
+          <h1 class="text-center">No Books Contributed</h1>
+        {% endif %}
+         </div>
+        </div>
+    </section>
+  
+
+    <!-- Footer -->
+    <!-- <section class="footer--section" >
+      <div class="container-fluid text-center">
+        <div class="footer--items row">
+          <div class="footer--details col-lg-12">
+            <p>© 2023 E-Library. All rights reserved.</p>
+          </div>
+        </div>
+        </div>
+      </section> -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  </body>
+</html>
