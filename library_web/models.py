@@ -54,7 +54,7 @@ class EBooksModel(models.Model):
     def __str__(self):
         return f"{self.title}"
     
-class BorrowRecord(models.Model):
+class BorrowRecord(models.Model): 
     student_id = models.CharField(max_length=50)
     email = models.EmailField()
     borrow_date = models.DateField(auto_now_add=True)
