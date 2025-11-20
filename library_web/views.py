@@ -7,10 +7,10 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from .decorators import unauthenticated_user, allowed_users
 from django.db.models import FileField
-import os
+import os, uuid, boto3
 from django.core.mail import send_mail
 from django.conf import settings
-import uuid
+from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
 User = get_user_model()
 
@@ -154,58 +154,65 @@ def deleteBook(request,book_id):
         book.delete()
         return redirect('home')
 
-    return render(request, 'deleteBook.html', {'book': book})
+    return render(request, 'deletebook.html', {'book': book})
 
 def explore(request):
     # pass context as needed
     return render(request, 'explore.html')
+    
+SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:651360790304:BorrowBookNotification"
 
+@login_required(login_url="login")
 def borrow_book(request, book_id):
     book = get_object_or_404(EBooksModel, id=book_id)
+    user = request.user  # logged-in user
 
     if request.method == "POST":
         form = BorrowForm(request.POST)
 
         if form.is_valid():
-            borrow_record = form.save(commit=False)
+            borrow_record = form.save(commit=False) 
             borrow_record.book = book
-            borrow_record.tracking_code = str(uuid.uuid4())[:8]  # Short tracking code
+            borrow_record.email = user.email      # 👈 ensure user email is used
+            
+            # Generate tracking ID
+            borrow_record.tracking_code = str(uuid.uuid4())[:8]
             borrow_record.save()
+            print("Borrow record ID:", borrow_record.id)
             
             # Mark book as borrowed
             book.is_borrowed = True
             book.save()
 
-            # Prepare email message
+            # Prepare email
             subject = f"Borrow Confirmation - {book.title}"
             message = (
-                f"Hello,\n\n"
-                f"You have borrowed the book: {book.title}\n"
-                f"Student ID: {borrow_record.student_id}\n"
-                f"Email: {borrow_record.email}\n"
-                f"Return Date: {borrow_record.return_date}\n\n"
-                f"Tracking Code: {borrow_record.tracking_code}\n"
-                f"Use this code to track your borrowed book.\n\n"
-                f"Thank you!"
+                f"Hello {user.username},\n\n"
+                f"You have borrowed the book: {book.title}\n\n"
+                f"Student ID : {borrow_record.student_id}\n"
+                f"Return Date: {borrow_record.return_date}\n"
+                f"Tracking Code: {borrow_record.tracking_code}\n\n"
+                f"Please keep this tracking code safe.\n"
+                f"Thank You!"
             )
 
-            # Send email
+            # Send email to logged-in user only
             send_mail(
                 subject,
                 message,
-                settings.DEFAULT_FROM_EMAIL,
-                [borrow_record.email],
-                fail_silently=False,
+                'noreply@yourdomain.com',  # from email
+                [user.email],              # recipient (logged-in user only)
+                fail_silently=False
             )
 
-            return render(
-                request,
-                "borrow_message.html",
-                {"record": borrow_record}
-            )
+            return render(request, "borrow_message.html", {"record": borrow_record})
 
     else:
-        form = BorrowForm()
+        # Pre-fill email and student id from logged-in user
+        form = BorrowForm(initial={
+            "email": user.email,
+            "student_id": user.id
+        })
 
     return render(request, "borrow_form.html", {"form": form, "book": book})
 
@@ -224,7 +231,6 @@ def return_book(request, record_id):
         return render(request, "return_message.html", {"book": book})
 
     return render(request, "return_confirm.html", {"record": record, "book": book})
-
 
 @allowed_users(allowed_roles=['admin'])
 def contri(request,user_id):

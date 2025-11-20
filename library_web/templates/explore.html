@@ -83,9 +83,9 @@
                         <p class="text-muted mb-2">{{ book.summary|truncatechars:60 }}</p>
                         {% endif %}
 
-                        <p class="mb-1"><strong>Description:</strong> {{ book.description|truncatechars:100 }}</p>
-                        <p class="mb-1"><strong>Pages:</strong> {{ book.pages }}</p>
-                        <p class="mb-3"><strong>Contributed By:</strong> {{ book.author }}</p>
+                        <p class="mb-1"><strong>Subtitle : </strong> {{ book.subtitle }} </p>
+                        <p class="mb-1"><strong>Author : </strong> {{ book.author }} </p>
+                        <p class="mb-3"><strong>Description </strong> {{ book.description }} </p>
 
                         <!-- PDF Download -->
                         {% if book.book_pdf %}
@@ -108,17 +108,16 @@
                             <!-- Borrowed Button (Disabled) -->
                             <button class="btn w-100 fw-semibold py-2 modern-main-btn mb-3"
                                     style="background: gray; cursor: not-allowed;" disabled>
-                                Borrowed
+                                Taken
                             </button>
 
-                            {% comment %} {% if request.user.is_superuser %}
-                            <!-- Return Book Button -->
-                            <a href="{% url 'return_book' record.id %}" 
+                            {% if request.user.is_superuser %}
+                            <a href="{% url 'borrow_book' book.id %}" 
                               class="btn btn-warning w-100 fw-semibold py-2 mb-3"
                               style="border-radius: 50px;">
                                 Return Book
                             </a>
-                            {% endif %} {% endcomment %}
+                            {% endif %}
                         {% else %}
                             <!-- Borrow Button -->
                             <a href="{% url 'borrow_book' book.id %}"

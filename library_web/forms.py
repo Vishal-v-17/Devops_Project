@@ -68,9 +68,8 @@ class EBooksForm(forms.ModelForm):
 class BorrowForm(forms.ModelForm):
     class Meta:
         model = BorrowRecord
-        fields = ['student_id', 'email', 'return_date']
+        fields = ['student_id', 'return_date']
         widgets = {
             'student_id': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Enter Student ID'}),
-            'email': forms.EmailInput(attrs={'class': 'form-control', 'placeholder': 'Enter Email'}),
             'return_date': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
         }

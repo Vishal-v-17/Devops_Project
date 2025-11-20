@@ -25,7 +25,7 @@ SECRET_KEY = '(1#6!8^s&)^bm-5m$n9z+is37y4iwe%bzbnc%wqy0*v2&9b81o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['8413774a052a40c1a862e2e7ab86d001.vfs.cloud9.us-east-1.amazonaws.com']
 
 AUTH_USER_MODEL = 'library_web.User'
 
