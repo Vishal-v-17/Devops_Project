@@ -15,6 +15,7 @@ from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 import re, uuid
 from datetime import date
 from django.db.models import Q
+from django.views.decorators.csrf import csrf_exempt, csrf_protect
 
 # Create your views here.
 
@@ -60,7 +61,7 @@ from django.db.models import Q
 #         return render(request, 'login.html')
     
 
-
+@csrf_protect
 def home(request):
     edu_books = EBooksModel.objects.filter(category='Education')
     fiction_books = EBooksModel.objects.filter(category='Fiction')
@@ -70,6 +71,7 @@ def home(request):
     book_borrow = EBooksModel.objects.all().order_by('-borrow_count')
     return render(request, 'home.html',{'edu_books':edu_books,'fiction_books':fiction_books,'science_books':science_books,'non_fiction_books':non_fiction_books,'book_rating': book_rating,'book_borrow': book_borrow})
 
+@csrf_protect
 def register_view(request):
     if request.method == 'POST':
         form = RegistrationForm(request.POST)
@@ -80,7 +82,7 @@ def register_view(request):
     else:
         form = RegistrationForm()
     return render(request, 'register.html', {'form': form})
-
+@csrf_protect
 def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
@@ -97,7 +99,7 @@ def logout(request):
     auth.logout(request)
     return redirect('home')
 
-
+@csrf_protect
 @login_required
 @allowed_users(allowed_roles=['admin', 'superuser'])
 def addBook(request, user_id):
@@ -114,6 +116,7 @@ def addBook(request, user_id):
 
     return render(request, 'addBook.html', {'form': form})
 
+@csrf_protect
 @login_required(login_url="login")
 def borrow_book(request, book_id):
     book = get_object_or_404(EBooksModel, id=book_id)
@@ -157,7 +160,7 @@ def borrow_book(request, book_id):
         })
 
     return render(request, "borrow_book.html", {"form": form, "book": book})
-
+@csrf_protect
 def return_book(request, book_id):
     book = get_object_or_404(EBooksModel, id=book_id)
 
@@ -193,12 +196,12 @@ def return_book(request, book_id):
         'book': book,
         'record': record
     })
-
+@csrf_protect
 #@allowed_users(allowed_roles=['admin','customer'])
 def viewBook(request,book_id):
     book = EBooksModel.objects.get(id=book_id)
     return render(request, 'viewBook.html', {'book': book})
-
+@csrf_protect
 @login_required
 @allowed_users(allowed_roles=['admin'])
 def editBook(request,book_id):
@@ -232,11 +235,11 @@ def deleteBook(request,book_id):
         return redirect('home')
 
     return render(request, 'deletebook.html', {'book': book})
-
+@csrf_protect
 def explore(request):
     # pass context as needed
     return render(request, 'explore.html')
-
+@csrf_protect
 def search_books(request):
     query = request.GET.get("q", "").strip()
     books = EBooksModel.objects.all()
