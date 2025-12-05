@@ -12,7 +12,9 @@ from django.core.mail import send_mail
 from django.conf import settings
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 
-User = get_user_model()
+import re, uuid
+from datetime import date
+from django.db.models import Q
 
 # Create your views here.
 
@@ -63,7 +65,10 @@ def home(request):
     edu_books = EBooksModel.objects.filter(category='Education')
     fiction_books = EBooksModel.objects.filter(category='Fiction')
     science_books = EBooksModel.objects.filter(category='Science')
-    return render(request, 'home.html',{'edu_books':edu_books,'fiction_books':fiction_books,'science_books':science_books})
+    non_fiction_books = EBooksModel.objects.filter(category='NonFriction')
+    book_rating = EBooksModel.objects.all().order_by('-rating')
+    book_borrow = EBooksModel.objects.all().order_by('-borrow_count')
+    return render(request, 'home.html',{'edu_books':edu_books,'fiction_books':fiction_books,'science_books':science_books,'non_fiction_books':non_fiction_books,'book_rating': book_rating,'book_borrow': book_borrow})
 
 def register_view(request):
     if request.method == 'POST':
@@ -94,29 +99,100 @@ def logout(request):
 
 
 @login_required
-#@allowed_users(allowed_roles=['admin'])
-def addBook(request,user_id):
-    user = User.objects.get(id=user_id)
+@allowed_users(allowed_roles=['admin', 'superuser'])
+def addBook(request, user_id):
     if request.method == 'POST':
         form = EBooksForm(request.POST, request.FILES)
         if form.is_valid():
             book = form.save(commit=False)
-            # book.author = user.first_name + " " + user.last_name
-            # book.author_id = user.id
-            print(book.author)
             book.save()
-            print()
-            print()
-            print(book.author)
-            print("Book saved successfully")
-            print()
-            print()
             return redirect('home')
         else:
             print(form.errors)
     else:
         form = EBooksForm()
+
     return render(request, 'addBook.html', {'form': form})
+
+@login_required(login_url="login")
+def borrow_book(request, book_id):
+    book = get_object_or_404(EBooksModel, id=book_id)
+    user = request.user
+
+    active_record = BorrowRecord.objects.filter(
+        book=book,
+        actual_return_date__isnull=True
+    ).first()
+
+    if active_record:
+        messages.error(request, "This book is already borrowed.")
+        return redirect('book_detail', book_id=book_id)
+
+    if request.method == "POST":
+        form = BorrowForm(request.POST)
+
+        if form.is_valid():
+            borrow_record = form.save(commit=False)
+            borrow_record.book = book
+            borrow_record.user = user
+            borrow_record.borrow_date = date.today()
+
+            # Validate: borrow_date should not be after return_date (due_date)
+            if borrow_record.borrow_date > borrow_record.return_date:
+                messages.error(request, "Return date cannot be before the borrow date.")
+                return render(request, "borrow_book.html", {"form": form, "book": book})
+
+            # Save record safely
+            borrow_record.save()
+
+            # Update book status
+            book.borrow_count += 1
+            book.is_borrowed = True
+            book.save()
+            return render(request, "borrow_message.html", {"record": borrow_record})
+
+    else:
+        form = BorrowForm(initial={
+            "student_id": user.id
+        })
+
+    return render(request, "borrow_book.html", {"form": form, "book": book})
+
+def return_book(request, book_id):
+    book = get_object_or_404(EBooksModel, id=book_id)
+
+    if not book.is_borrowed:
+        messages.error(request, "This book is not currently borrowed.")
+        return render(request, 'explore.html')
+
+    # Get active borrow record
+    record = BorrowRecord.objects.filter(book=book, actual_return_date__isnull=True).first()
+
+    if not record:
+        messages.error(request, "No active borrow record found for this book.")
+        return render(request, 'explore.html')
+
+    today = date.today()
+
+    # Calculate late fee based on due date
+    if today > record.return_date:
+        extra_days = (today - record.return_dat).days
+        record.late_fee = extra_days * 8
+    else:
+        record.late_fee = 0
+
+    # Mark as returned today
+    record.actual_return_date = today
+    record.save()
+
+    # Update book status
+    book.is_borrowed = False
+    book.save()
+
+    return render(request, 'return_Book.html', {
+        'book': book,
+        'record': record
+    })
 
 #@allowed_users(allowed_roles=['admin','customer'])
 def viewBook(request,book_id):
@@ -124,7 +200,7 @@ def viewBook(request,book_id):
     return render(request, 'viewBook.html', {'book': book})
 
 @login_required
-#@allowed_users(allowed_roles=['admin'])
+@allowed_users(allowed_roles=['admin'])
 def editBook(request,book_id):
     book = EBooksModel.objects.get(id=book_id)
     if request.method == 'POST':
@@ -139,6 +215,7 @@ def editBook(request,book_id):
     return render(request, 'editBook.html', {'form': form,'book':book})
 
 @login_required
+@allowed_users(allowed_roles=['admin'])
 def deleteBook(request,book_id):
     book = EBooksModel.objects.get(id=book_id)
     
@@ -159,81 +236,19 @@ def deleteBook(request,book_id):
 def explore(request):
     # pass context as needed
     return render(request, 'explore.html')
-    
-SNS_TOPIC_ARN = "arn:aws:sns:us-east-1:651360790304:BorrowBookNotification"
 
-@login_required(login_url="login")
-def borrow_book(request, book_id):
-    book = get_object_or_404(EBooksModel, id=book_id)
-    user = request.user  # logged-in user
+def search_books(request):
+    query = request.GET.get("q", "").strip()
+    books = EBooksModel.objects.all()
 
-    if request.method == "POST":
-        form = BorrowForm(request.POST)
+    if query:
+        keywords = query.split()  # Split into words
 
-        if form.is_valid():
-            borrow_record = form.save(commit=False) 
-            borrow_record.book = book
-            borrow_record.email = user.email      # 👈 ensure user email is used
-            
-            # Generate tracking ID
-            borrow_record.tracking_code = str(uuid.uuid4())[:8]
-            borrow_record.save()
-            print("Borrow record ID:", borrow_record.id)
-            
-            # Mark book as borrowed
-            book.is_borrowed = True
-            book.save()
+        # Apply AND filter: each word must be in the title
+        for word in keywords:
+            books = books.filter(title__icontains=word)
 
-            # Prepare email
-            subject = f"Borrow Confirmation - {book.title}"
-            message = (
-                f"Hello {user.username},\n\n"
-                f"You have borrowed the book: {book.title}\n\n"
-                f"Student ID : {borrow_record.student_id}\n"
-                f"Return Date: {borrow_record.return_date}\n"
-                f"Tracking Code: {borrow_record.tracking_code}\n\n"
-                f"Please keep this tracking code safe.\n"
-                f"Thank You!"
-            )
-
-            # Send email to logged-in user only
-            send_mail(
-                subject,
-                message,
-                'noreply@yourdomain.com',  # from email
-                [user.email],              # recipient (logged-in user only)
-                fail_silently=False
-            )
-
-            return render(request, "borrow_message.html", {"record": borrow_record})
-
-    else:
-        # Pre-fill email and student id from logged-in user
-        form = BorrowForm(initial={
-            "email": user.email,
-            "student_id": user.id
-        })
-
-    return render(request, "borrow_form.html", {"form": form, "book": book})
-
-def return_book(request, record_id):
-    record = get_object_or_404(BorrowRecord, id=record_id)
-    book = record.book
-
-    if request.method == "POST":
-        # Mark book as available
-        book.is_borrowed = False
-        book.save()
-
-        # Delete borrow record (or set returned=True if using status)
-        record.delete()
-
-        return render(request, "return_message.html", {"book": book})
-
-    return render(request, "return_confirm.html", {"record": record, "book": book})
-
-@allowed_users(allowed_roles=['admin'])
-def contri(request,user_id):
-    books = EBooksModel.objects.filter(author_id=user_id)
-    return render(request, 'contri.html', {'books': books})
-
+    return render(request, "search_books.html", {
+        "books": books,
+        "query": query
+    })

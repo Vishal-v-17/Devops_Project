@@ -15,9 +15,10 @@ urlpatterns = [
   path('deletebook/<int:book_id>/', views.deleteBook, name='deleteBook'),
   path('borrow/<int:book_id>/', views.borrow_book, name='borrow_book'),
   # path('return/<int:record_id>/', views.return_book, name='return_book'),
-  path('contri/<int:user_id>', views.contri, name='contri'),
   path('logout', views.logout, name='logout'),
   path('viewBook/<int:book_id>', views.viewBook, name='viewBook'),
+  path("return/<int:book_id>/", views.return_book, name="return_book"),
+  path("search/", views.search_books, name="search_books"),
 ]
 
 if settings.DEBUG:

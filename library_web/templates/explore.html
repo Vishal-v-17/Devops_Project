@@ -41,119 +41,77 @@
 </style>
 
 
-<section class="explore--category m-5">
+<div class="container overflow-auto" 
+     style="white-space: nowrap; padding-bottom: 20px;">
 
-    {% regroup edu_books by category as category_groups %}
+    {% for book in books %}
+    <div class="d-inline-block" style="width: 300px; margin-right: 20px;">
 
-    {% for category in category_groups %}
-    
-    <!-- Category Header -->
-    <div class="category-header mb-4">
-        <h2 class="text-center fw-bold category-title">
-            {{ category.grouper }}
-        </h2>
-        <div class="category-underline"></div>
-    </div>
+        <div class="card shadow-lg border-0 rounded-4 modern-card">
 
-    <div class="container d-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 30px;">
-        <div class="row">
-
-            {% for book in category.list %}
-            <div class="col-lg-4 col-md-6 mb-4 d-flex">
-
-                <div class="card shadow-lg border-0 rounded-4 w-100 modern-card">
-
-                    <!-- Book Image -->
-                    <div class="text-center p-3">
-                        <img src="{{ book.image.url }}" alt="{{ book.title }}"
-                            class="img-fluid rounded card-img-top-modern">
-                    </div>
-
-                    <!-- Content -->
-                    <div class="card-body px-4 pb-4 text-center">
-
-                        <h5 class="fw-bold book-title">
-                            <a href="{% url 'viewBook' book.id %}"
-                                class="text-decoration-none text-dark">
-                                {{ book.title }}
-                            </a>
-                        </h5>
-
-                        {% if book.summary %}
-                        <p class="text-muted mb-2">{{ book.summary|truncatechars:60 }}</p>
-                        {% endif %}
-
-                        <p class="mb-1"><strong>Subtitle : </strong> {{ book.subtitle }} </p>
-                        <p class="mb-1"><strong>Author : </strong> {{ book.author }} </p>
-                        <p class="mb-3"><strong>Description </strong> {{ book.description }} </p>
-
-                        <!-- PDF Download -->
-                        {% if book.book_pdf %}
-                        <a href="{{ book.book_pdf.url }}" download 
-                           class="btn btn-outline-primary w-100 mb-2 modern-btn">
-                            📄 Download PDF
-                        </a>
-                        {% endif %}
-
-                        <!-- Audio Download -->
-                        {% if book.book_audio %}
-                        <a href="{{ book.book_audio.url }}" download
-                           class="btn btn-outline-success w-100 mb-3 modern-btn">
-                            🎧 Download Audio
-                        </a>
-                        {% endif %}
-                        <!-- View Details -->
-                        {% if book.is_borrowed %}
-
-                            <!-- Borrowed Button (Disabled) -->
-                            <button class="btn w-100 fw-semibold py-2 modern-main-btn mb-3"
-                                    style="background: gray; cursor: not-allowed;" disabled>
-                                Taken
-                            </button>
-
-                            {% if request.user.is_superuser %}
-                            <a href="{% url 'borrow_book' book.id %}" 
-                              class="btn btn-warning w-100 fw-semibold py-2 mb-3"
-                              style="border-radius: 50px;">
-                                Return Book
-                            </a>
-                            {% endif %}
-                        {% else %}
-                            <!-- Borrow Button -->
-                            <a href="{% url 'borrow_book' book.id %}"
-                              class="btn w-100 fw-semibold py-2 mb-3 modern-main-btn">
-                                Borrow
-                            </a>
-                        {% endif %}
-
-                        {% if request.user.is_superuser %}
-                        <div class="d-flex justify-content-between gap-3">
-
-                            <a href="{% url 'editBook' book.id %}"
-                               class="btn btn-warning fw-semibold py-2 w-50 modern-btn">
-                               Edit
-                            </a>
-
-                            <a href="{% url 'deleteBook' book.id %}"
-                               class="btn btn-danger fw-semibold py-2 w-50 modern-btn">
-                               Delete
-                            </a>
-
-                        </div>
-                        {% endif %}
-
-                    </div>
-                </div>
+            <div class="text-center p-3">
+                <img src="{{ book.image.url }}" alt="{{ book.title }}"
+                     class="img-fluid rounded card-img-top-modern">
             </div>
-            {% endfor %}
+
+            <div class="card-body px-4 pb-4 text-center">
+
+                <h5 class="fw-bold book-title">{{ book.title }}</h5>
+
+                <p><strong>Author:</strong> {{ book.author }}</p>
+                <p><strong>Rate:</strong> {{ book.rating }}</p>
+
+                {% if book.book_pdf %}
+                <a href="{{ book.book_pdf.url }}" download class="btn btn-outline-primary w-100 mb-2">
+                    📄 Download PDF
+                </a>
+                {% endif %}
+
+                {% if book.book_audio %}
+                <a href="{{ book.book_audio.url }}" download class="btn btn-outline-success w-100 mb-2">
+                    🎧 Download Audio
+                </a>
+                {% endif %}
+
+                {% if book.is_borrowed %}
+                <div class="mb-3" style="width: 100%;">
+                    <button class="btn w-100 fw-semibold py-2 modern-main-btn mb-3"
+                            style="background: gray; cursor: not-allowed;" disabled>
+                        Taken
+                    </button>
+                  </div>
+                  <div class="mb-3" style="width: 100%;">
+                    {% if request.user.is_superuser %}
+                    <a href="{% url 'return_book' book.id %}" 
+                       class="btn btn-warning w-100 fw-semibold py-2 mb-3">
+                        Return Book
+                    </a>
+                  </div>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'borrow_book' book.id %}"
+                       class="btn w-100 fw-semibold py-2 mb-3 modern-main-btn">
+                        Borrow
+                    </a>
+                {% endif %}
+
+                {% if request.user.is_superuser %}
+                <div class="d-flex justify-content-between gap-3">
+                    <a href="{% url 'editBook' book.id %}"
+                       class="btn btn-warning fw-semibold py-2 w-50 modern-btn">Edit</a>
+
+                    <a href="{% url 'deleteBook' book.id %}"
+                       class="btn btn-danger fw-semibold py-2 w-50 modern-btn">Delete</a>
+                </div>
+                {% endif %}
+
+            </div>
 
         </div>
+
     </div>
-
     {% endfor %}
-
-</section>
-
+</div>
 
 
 

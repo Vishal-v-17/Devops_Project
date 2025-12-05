@@ -39,6 +39,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 # Create your models here.
 class EBooksModel(models.Model):
+    book_id = models.CharField(max_length=20, unique=True, blank=True)
     title = models.CharField(max_length=200)
     subtitle = models.CharField(max_length=255, blank=True)
     author = models.CharField(max_length=200)
@@ -47,21 +48,27 @@ class EBooksModel(models.Model):
     category = models.CharField(max_length=50)
     image = models.ImageField(upload_to="books/")
     rating = models.IntegerField(default=0)
+    borrow_count = models.PositiveIntegerField(default=0)
     book_pdf = models.FileField(upload_to="pdfs/", null=True, blank=True)
     book_audio = models.FileField(upload_to="audio/", null=True, blank=True)
     is_borrowed = models.BooleanField(default=False)
+    
+    def save(self, *args, **kwargs):
+        if not self.book_id:
+            self.book_id = "BOOK-" + uuid.uuid4().hex[:6].upper()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"{self.title}"
     
 class BorrowRecord(models.Model): 
     student_id = models.CharField(max_length=50)
-    email = models.EmailField()
-    borrow_date = models.DateField(auto_now_add=True)
-    return_date = models.DateField()
     book = models.ForeignKey("EBooksModel", on_delete=models.CASCADE)
     tracking_code = models.CharField(max_length=100, unique=True, default=uuid.uuid4)
-    borrowed_at = models.DateTimeField(auto_now_add=True, null=True, blank=True)
+    borrow_date = models.DateField(null=True, blank=True)
+    return_date = models.DateField(null=True, blank=True)
+    late_fee = models.DecimalField(max_digits=6, decimal_places=2, default=0)
+    actual_return_date = models.DateField(null=True, blank=True)
     
     def __str__(self):
         return f"{self.student_id} borrowed {self.book.title}"

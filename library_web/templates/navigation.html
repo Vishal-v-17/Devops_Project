@@ -53,27 +53,27 @@
 
       <!-- Center Content -->
       <div class="collapse navbar-collapse justify-content-center" id="navbarNav">
-        <ul class="navbar-nav mb-2 mb-lg-0 text-center">
+          <ul class="navbar-nav mb-2 mb-lg-0 text-center">
           <li class="nav-item px-2">
             <a class="nav-link text-white fw-semibold" href="/">Home</a>
           </li>
           <li class="nav-item dropdown px-2">
-    <a class="nav-link text-white fw-semibold no-caret dropdown-hover" 
-       href="#" 
-       id="booksDropdown" 
-       role="button">
-        Books
-    </a>
+              <a class="nav-link text-white fw-semibold no-caret dropdown-hover" 
+                href="#" 
+                id="booksDropdown" 
+                role="button">
+                  Books
+              </a>
 
-    <ul class="dropdown-menu" aria-labelledby="booksDropdown">
-        <li><a class="dropdown-item" href="/">All Books</a></li>
-        <li><a class="dropdown-item" href="/education">Education</a></li>
-        <li><a class="dropdown-item" href="/fiction">Fiction</a></li>
-        <li><a class="dropdown-item" href="/non-fiction">Non-Fiction</a></li>
-        <li><a class="dropdown-item" href="/science">Science</a></li>
-        {% comment %} <li><hr class="dropdown-divider"></li> {% endcomment %} <!-- it is used for adding a drivider line between the class -->
-    </ul>
-</li>
+              <ul class="dropdown-menu" aria-labelledby="booksDropdown">
+                  <li><a class="dropdown-item" href="/">All Books</a></li>
+                  <li><a class="dropdown-item" href="/education">Education</a></li>
+                  <li><a class="dropdown-item" href="/fiction">Fiction</a></li>
+                  <li><a class="dropdown-item" href="/non-fiction">Non-Fiction</a></li>
+                  <li><a class="dropdown-item" href="/science">Science</a></li>
+                  {% comment %} <li><hr class="dropdown-divider"></li> {% endcomment %} <!-- it is used for adding a drivider line between the class -->
+              </ul>
+          </li>
 
           <li class="nav-item px-2">
             <a class="nav-link text-white fw-semibold" href="/">E-books</a>
@@ -85,15 +85,23 @@
         </ul>
 
         <!-- Search Bar -->
-        <form class="d-flex justify-content-center mt-2" style="max-width: 400px; width: 100%;">
-          <input class="form-control me-2"
-                 type="search"
-                 name="q"
-                 placeholder="Search books..."
-                 aria-label="Search"
-                 style="background-color: #f1f5f9; border: none; border-radius: 20px; padding: 8px 15px;">
-          <button class="btn btn-light fw-semibold px-4 rounded-pill" type="submit">Search</button>
-        </form>
+        
+        <form class="d-flex justify-content-center mt-2" 
+      action="{% url 'search_books' %}" method="GET"
+      style="max-width: 400px; width: 100%;">
+
+    <input class="form-control me-2"
+           type="search"
+           name="q"
+           placeholder="Search books..."
+           aria-label="Search"
+           style="background-color: #f1f5f9; border: none; border-radius: 20px; padding: 8px 15px;">
+
+    <button class="btn btn-light fw-semibold px-4 rounded-pill" type="submit">
+        Search
+    </button>
+</form>
+
       </div>
 
       <!-- User Profile Dropdown (Right) -->
@@ -103,7 +111,7 @@
           <i class="bi-person-circle fs-4"></i>
         </a>
         <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
-          {% if user.is_authenticated %}
+          {% if user.is_superuser or user.username == 'admin' %}
           <li><a class="dropdown-item" href="#">{{ user.username }}</a></li>
           <li><a class="dropdown-item" href="{% url 'addBook' user_id=user.id %}">Add Book</a></li>
           <li><hr class="dropdown-divider"></li>

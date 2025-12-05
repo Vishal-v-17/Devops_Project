@@ -25,7 +25,7 @@ SECRET_KEY = '(1#6!8^s&)^bm-5m$n9z+is37y4iwe%bzbnc%wqy0*v2&9b81o'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['8413774a052a40c1a862e2e7ab86d001.vfs.cloud9.us-east-1.amazonaws.com']
+ALLOWED_HOSTS = []
 
 AUTH_USER_MODEL = 'library_web.User'
 
@@ -125,14 +125,5 @@ STATIC_URL = '/static/'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
-EMAIL_HOST_USER = 'vishalblue123@gmail.com'
-EMAIL_HOST_PASSWORD = 'ucga cwwa cyui rlbh'
-DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
-
 
 

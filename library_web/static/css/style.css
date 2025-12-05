@@ -1,0 +1,198 @@
+/* .navbar{
+    background-color: #B1C381;
+    font-weight: 600;
+}
+.nav-link{
+    margin: 0 1rem;
+}
+.navbar-brand{
+    font-size: 2rem;
+}
+.nav-input {
+  float: right;
+  padding: 6px;
+  border: none;
+  margin-top: 8px;
+  margin-right: 16px;
+  font-size: 17px;
+} */
+
+/* navigation.html */
+.navbar-nav .nav-link {
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.navbar-nav .nav-link:hover {
+  color: #ffd700 !important;
+  transform: scale(1.05);
+}
+
+.navbar-brand:hover {
+  color: #ffeb3b !important;
+  text-shadow: 1px 1px 5px rgba(255, 255, 255, 0.4);
+}
+.dropdown-menu {
+  border-radius: 12px;
+  /* box-shadow: 0 4px 10px rgba(0,0,0,0.15); */
+}
+.dropdown-item:hover {
+  background-color: #eaf2ff;
+}
+
+
+/* Brand */
+.brand--section{
+    padding:5% 7%;
+    color: #B1C381;
+    font-weight: 600;
+}
+.brand--details{
+    padding: 3% 7%;
+    color: #B1C381;
+    font-weight: 600;
+    font-size: 3rem;
+}
+
+/* Views */
+.view-book-page {
+    background: linear-gradient(135deg, #f9fbfd 0%, #eef3f9 100%);
+    min-height: 100vh;
+    color: #333;
+  }
+
+  .underline {
+    width: 120px;
+    height: 4px;
+    background: #007bff;
+    border-radius: 3px;
+  }
+
+  .book-details {
+    background: rgba(255, 255, 255, 0.85);
+    padding: 2rem 3rem;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(8px);
+    transition: all 0.3s ease;
+  }
+
+  .book-details:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.1);
+  }
+
+  .detail-item h4 {
+    position: relative;
+  }
+
+  .detail-item h4::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 2px;
+    background: #007bff;
+    margin-top: 6px;
+    border-radius: 2px;
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, #007bff, #004aad);
+    border: none;
+  }
+
+  .btn-primary:hover {
+    background: linear-gradient(135deg, #0059d6, #003a8f);
+  }
+
+
+/* Features */
+.feature--section{
+    padding: 5% 7%;
+    background-color: #B1C381;
+    font-weight: 600;
+}
+.feature--icon{
+    padding: 2rem;
+}
+
+/* Add your Book */
+.addBook--section{
+    padding: 5% 7%;
+    color: #B1C381;
+    font-weight: 600;
+}
+
+input[type="radio"] {
+  display: none;
+}
+label {
+  font-size: 2rem;
+  color: #ccc;
+  cursor: pointer;
+}
+input[type="radio"]:checked ~ label {
+  color: gold;
+}
+
+
+/* Explore of books */
+.card-body {
+  width: 80%;
+  background-color: white;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  margin-bottom: 25px;
+}
+
+.card-content {
+  text-align: center;
+  padding: 10px 20px;
+}
+
+.card-content button {
+  border: none;
+  outline: 0;
+  padding: 12px;
+  color: white;
+  background-color: #000;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  font-size: 18px;
+}
+
+.card-content button:hover {
+  opacity: 0.7;
+}
+
+.summary-link {
+  color: black;               /* black text */
+  text-decoration: none;      /* remove underline */
+  font-weight: bold;          /* make it bold */
+  transition: text-decoration 0.3s ease;
+}
+
+.summary-link:hover {
+  text-decoration: underline; /* underline only on hover */
+}
+
+/* Footer */
+.footer--section{
+    padding: 5% 7%;
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    color: white;
+    font-weight: 600;
+}
+
+/* Explore */
+
+.explore--section{
+    padding: 3% 5%;
+    color: #B1C381;
+    font-weight: 600;
+}
+
+.explore--section input{
+    color:#B1C381;
+}
+
+/* Register */

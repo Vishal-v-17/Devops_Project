@@ -1,0 +1,115 @@
+<style>
+.category-title {
+    font-size: 2rem;
+    color: #1e3c72;
+}
+
+.category-underline {
+    width: 120px;
+    height: 4px;
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    margin: 8px auto 30px auto;
+    border-radius: 10px;
+}
+
+.modern-card {
+    transition: transform .25s ease, box-shadow .25s ease;
+}
+
+.modern-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 12px 25px rgba(0,0,0,0.15);
+}
+
+.card-img-top-modern {
+    height: 220px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.modern-btn {
+    border-radius: 50px !important;
+    padding: 10px;
+}
+
+.modern-main-btn {
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    color: white;
+    border-radius: 50px;
+}
+</style>
+
+<h2>Top Rated Books</h2>
+
+<div class="container overflow-auto" 
+     style="white-space: nowrap; padding-bottom: 20px;">
+
+    {% for book in book_rating %}
+    <div class="d-inline-block" style="width: 300px; margin-right: 20px;">
+
+        <div class="card shadow-lg border-0 rounded-4 modern-card">
+
+            <div class="text-center p-3">
+                <img src="{{ book.image.url }}" alt="{{ book.title }}"
+                     class="img-fluid rounded card-img-top-modern">
+            </div>
+
+            <div class="card-body px-4 pb-4 text-center">
+
+                <h5 class="fw-bold book-title">{{ book.title }}</h5>
+
+                <p><strong>Author:</strong> {{ book.author }}</p>
+                <p><strong>Rate:</strong> {{ book.rating }}</p>
+
+                {% if book.book_pdf %}
+                <a href="{{ book.book_pdf.url }}" download class="btn btn-outline-primary w-100 mb-2">
+                    📄 Download PDF
+                </a>
+                {% endif %}
+
+                {% if book.book_audio %}
+                <a href="{{ book.book_audio.url }}" download class="btn btn-outline-success w-100 mb-2">
+                    🎧 Download Audio
+                </a>
+                {% endif %}
+
+                {% if book.is_borrowed %}
+                    <div class="mb-3" style="width: 100%;">
+                        <button class="btn w-100 fw-semibold py-2 modern-main-btn mb-3"
+                                style="background: gray; cursor: not-allowed;" disabled>
+                            Taken
+                        </button>
+                    </div>
+                    <div class="mb-3" style="width: 100%;">
+                        {% if request.user.is_superuser %}
+                        <a href="{% url 'return_book' book.id %}" 
+                        class="btn btn-warning w-100 fw-semibold py-2 mb-3">
+                            Return Book
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <a href="{% url 'borrow_book' book.id %}"
+                       class="btn w-100 fw-semibold py-2 mb-3 modern-main-btn">
+                        Borrow
+                    </a>
+                {% endif %}
+
+                {% if request.user.is_superuser %}
+                <div class="d-flex justify-content-between gap-3">
+                    <a href="{% url 'editBook' book.id %}"
+                       class="btn btn-warning fw-semibold py-2 w-50 modern-btn">Edit</a>
+
+                    <a href="{% url 'deleteBook' book.id %}"
+                       class="btn btn-danger fw-semibold py-2 w-50 modern-btn">Delete</a>
+                </div>
+                {% endif %}
+
+            </div>
+
+        </div>
+
+    </div>
+    {% endfor %}
+</div>

@@ -45,44 +45,16 @@
   </div>
 </section>
 
-
-    {% include 'explore.html' %} 
-
-    <!-- Features -->
-    <section class="feature--section">
-      <div class="container text-center">
-        <div class="feature--items row">
-          <div class="feature--item col-lg-4 col-md-12">
-            <div class="feature--icon">
-              <img width="50" height="50" 
-                   src="https://img.icons8.com/ios-filled/50/book.png" alt="book"/>
-            </div>
-            <div class="feature--details">
-              <h4>Books</h4>
-            </div>
-          </div>
-          <div class="feature--item col-lg-4 col-md-12">
-            <div class="feature--icon">
-              <img width="64" height="64" 
-                   src="https://img.icons8.com/external-victoruler-solid-victoruler/64/external-read-education-and-school-victoruler-solid-victoruler.png" alt="external-read-education-and-school-victoruler-solid-victoruler"/>
-            </div>
-            <div class="feature--details">
-              <h4>Read</h4>
-            </div>
-          </div>
-          <div class="feature--item col-lg-4 col-md-12">
-            <div class="feature--icon">
-              <img width="64" height="64" src="https://img.icons8.com/pastel-glyph/64/download--v1.png" 
-                   alt="download--v1"/>
-            </div>
-            <div class="feature--details">
-              <h4>Download</h4>
-              
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+  {% include 'books_borrow_cnt.html' %}
+    {% include 'books_rating.html' %} 
+  <h2>Education</h2>
+  {% include "explore.html" with books=edu_books %}
+  <h2>Fiction</h2>
+  {% include "explore.html" with books=fiction_books %}
+  <h2>Science</h2>
+  {% include "explore.html" with books=science_books %}
+  <h2>Non Fiction</h2>
+  {% include "explore.html" with books=non_fiction_books %}
 
     {% include 'footer.html' %} 
 

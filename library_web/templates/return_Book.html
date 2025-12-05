@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Return Details</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+        .details-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;  /* centers everything */
+            margin-top: 40px;
+        }
+
+        .details-box {
+            border: 1px solid #ccc;
+            padding: 20px;
+            width: 350px;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .details-box h2 {
+            margin-top: 0;
+        }
+        .fee {
+            color: red;
+            font-weight: bold;
+        }
+        .no-fee {
+            color: green;
+            font-weight: bold;
+        }
+        .home-btn {
+            display: inline-block;
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            font-weight: bold;
+        }
+
+        .home-btn:hover {
+            background: #0056b3;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="details-container">
+        <div class="details-box">
+            <h2>Book Returned Successfully</h2>
+
+            <p><strong>Book Title:</strong> {{ book.title }}</p>
+
+            <p><strong>Student ID:</strong> {{ record.student_id }}</p>
+
+            <p><strong>Borrow Date:</strong> 
+                {% if record.borrow_date %}
+                    {{ record.borrow_date }}
+                {% else %}
+                    Not available
+                {% endif %}
+            </p>
+
+            <p><strong>Originally Due:</strong> 
+                {% if record.return_date %}
+                    {{ record.return_date }}
+                {% else %}
+                    Not available
+                {% endif %}
+            </p>
+
+            <p><strong>Returned On:</strong> {{ record.actual_return_date }}</p>
+
+            <p>
+                <strong>Late Fee:</strong>
+                {% if record.late_fee > 0 %}
+                    <span class="fee">€{{ record.late_fee }}</span>
+                {% else %}
+                    <span class="no-fee">No Late Fee</span>
+                {% endif %}
+            </p>
+        </div>
+
+        <div class="home-btn-wrapper">
+            <a href="{% url 'home' %}" class="home-btn">Home</a>
+        </div>
+    </div>
+
+</body>
+</html>
