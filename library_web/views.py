@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import FileField
+from django.views.decorators.http import require_GET, require_POST
 
 # Local imports
 from library_web.forms import EBooksForm, RegistrationForm, BorrowForm
@@ -21,7 +22,7 @@ from library_web.models import EBooksModel, BorrowRecord
 from .decorators import allowed_users
 
 
-@csrf_protect
+@require_GET
 def home(request):
     """Display categorized books, top rated, and most borrowed."""
     edu_books = EBooksModel.objects.filter(category="Education")
@@ -44,7 +45,7 @@ def home(request):
         },
     )
 
-
+@require_POST
 @csrf_protect
 def register_view(request):
     """Handle user registration using RegistrationForm."""
@@ -59,7 +60,7 @@ def register_view(request):
 
     return render(request, "register.html", {"form": form})
 
-
+@require_POST
 @csrf_protect
 def login_view(request):
     """Handle login for users."""
@@ -76,7 +77,7 @@ def login_view(request):
 
     return render(request, "login.html")
 
-
+@require_POST
 def logout_view(request):
     """Logout the current user."""
     django_logout(request)
