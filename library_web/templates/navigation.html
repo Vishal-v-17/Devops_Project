@@ -113,7 +113,7 @@
         <ul class="dropdown-menu dropdown-menu-end mt-2" aria-labelledby="userDropdown">
           {% if user.is_superuser or user.username == 'admin' %}
           <li><a class="dropdown-item" href="#">{{ user.username }}</a></li>
-          <li><a class="dropdown-item" href="{% url 'addBook' user_id=user.id %}">Add Book</a></li>
+          <li><a class="dropdown-item" href="{% url 'addBook' %}">Add Book</a></li>
           <li><hr class="dropdown-divider"></li>
           <li><a class="dropdown-item text-danger" href="{% url 'logout' %}">Logout</a></li>
           {% else %}

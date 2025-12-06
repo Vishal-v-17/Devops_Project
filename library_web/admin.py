@@ -1,3 +1,5 @@
+"""Admin configuration for library_web app"""
+
 from django.contrib import admin
 from .models import User, EBooksModel, BorrowRecord
 
