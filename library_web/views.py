@@ -83,7 +83,7 @@ def logout_view(request):
     django_logout(request)
     return redirect("home")
 
-
+@require_POST
 @csrf_protect
 @login_required
 @allowed_users(allowed_roles=["admin", "superuser"])
@@ -100,7 +100,7 @@ def add_book(request):
 
     return render(request, "addBook.html", {"form": form})
 
-
+@require_POST
 @csrf_protect
 @login_required(login_url="login")
 def borrow_book(request, book_id):
@@ -144,7 +144,7 @@ def borrow_book(request, book_id):
 
     return render(request, "borrow_book.html", {"form": form, "book": book})
 
-
+@require_POST
 @csrf_protect
 def return_book(request, book_id):
     """Process the return of a borrowed book."""
@@ -182,14 +182,13 @@ def return_book(request, book_id):
         {"book": book, "record": record},
     )
 
-
-@csrf_protect
+@require_GET
 def view_book(request, book_id):
     """View details of a single book."""
     book = get_object_or_404(EBooksModel, id=book_id)
     return render(request, "viewBook.html", {"book": book})
 
-
+@require_POST
 @csrf_protect
 @login_required
 @allowed_users(allowed_roles=["admin"])
@@ -207,7 +206,7 @@ def edit_book(request, book_id):
 
     return render(request, "editBook.html", {"form": form, "book": book})
 
-
+@require_POST
 @login_required
 @allowed_users(allowed_roles=["admin"])
 def delete_book(request, book_id):
@@ -226,13 +225,13 @@ def delete_book(request, book_id):
 
     return render(request, "deletebook.html", {"book": book})
 
-
+@require_GET
 @csrf_protect
 def explore(request):
     """Explore books page."""
     return render(request, "explore.html")
 
-
+@require_GET
 @csrf_protect
 def search_books(request):
     """Search books by title using keyword AND matching."""
