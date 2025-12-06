@@ -14,7 +14,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import redirect, render, get_object_or_404
 from django.views.decorators.csrf import csrf_protect
 from django.db.models import FileField
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_http_methods
 
 # Local imports
 from library_web.forms import EBooksForm, RegistrationForm, BorrowForm
@@ -22,7 +22,7 @@ from library_web.models import EBooksModel, BorrowRecord
 from .decorators import allowed_users
 
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 def home(request):
     """Display categorized books, top rated, and most borrowed."""
     edu_books = EBooksModel.objects.filter(category="Education")
@@ -45,7 +45,7 @@ def home(request):
         },
     )
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 def register_view(request):
     """Handle user registration using RegistrationForm."""
@@ -60,7 +60,7 @@ def register_view(request):
 
     return render(request, "register.html", {"form": form})
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 def login_view(request):
     """Handle login for users."""
@@ -77,13 +77,13 @@ def login_view(request):
 
     return render(request, "login.html")
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 def logout_view(request):
     """Logout the current user."""
     django_logout(request)
     return redirect("home")
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 @login_required
 @allowed_users(allowed_roles=["admin", "superuser"])
@@ -100,7 +100,7 @@ def add_book(request):
 
     return render(request, "addBook.html", {"form": form})
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 @login_required(login_url="login")
 def borrow_book(request, book_id):
@@ -144,7 +144,7 @@ def borrow_book(request, book_id):
 
     return render(request, "borrow_book.html", {"form": form, "book": book})
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 def return_book(request, book_id):
     """Process the return of a borrowed book."""
@@ -182,13 +182,13 @@ def return_book(request, book_id):
         {"book": book, "record": record},
     )
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 def view_book(request, book_id):
     """View details of a single book."""
     book = get_object_or_404(EBooksModel, id=book_id)
     return render(request, "viewBook.html", {"book": book})
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 @login_required
 @allowed_users(allowed_roles=["admin"])
@@ -206,7 +206,7 @@ def edit_book(request, book_id):
 
     return render(request, "editBook.html", {"form": form, "book": book})
 
-@require_POST
+@require_http_methods(["GET", "POST"])
 @login_required
 @allowed_users(allowed_roles=["admin"])
 def delete_book(request, book_id):
@@ -225,13 +225,13 @@ def delete_book(request, book_id):
 
     return render(request, "deletebook.html", {"book": book})
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 def explore(request):
     """Explore books page."""
     return render(request, "explore.html")
 
-@require_GET
+@require_http_methods(["GET", "POST"])
 @csrf_protect
 def search_books(request):
     """Search books by title using keyword AND matching."""
