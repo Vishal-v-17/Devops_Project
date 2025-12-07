@@ -21,8 +21,6 @@ from library_web.forms import EBooksForm, RegistrationForm, BorrowForm
 from library_web.models import EBooksModel, BorrowRecord
 from .decorators import allowed_users
 
-#Local Varibale
-EXPLORE_TEMPLATE = "explore.html"
 
 @require_http_methods(["GET", "POST"])
 def home(request):
@@ -154,7 +152,7 @@ def return_book(request, book_id):
 
     if not book.is_borrowed:
         messages.error(request, "This book is not currently borrowed.")
-        return render(request, EXPLORE_TEMPLATE)
+        return render(request, "explore.html")
 
     record = BorrowRecord.objects.filter(
         book=book, actual_return_date__isnull=True
@@ -162,7 +160,7 @@ def return_book(request, book_id):
 
     if not record:
         messages.error(request, "No active borrow record found for this book.")
-        return render(request, EXPLORE_TEMPLATE)
+        return render(request, "explore.html")
 
     today = date.today()
 
@@ -231,7 +229,7 @@ def delete_book(request, book_id):
 @csrf_protect
 def explore(request):
     """Explore books page."""
-    return render(request, EXPLORE_TEMPLATE)
+    return render(request, "explore.html")
 
 @require_http_methods(["GET", "POST"])
 @csrf_protect
