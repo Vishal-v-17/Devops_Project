@@ -22,7 +22,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 # SECURITY WARNING: keep the secret key used in production secret!
 
-SECRET_KEY = os.getenv("SECRET_KEY")
+#SECRET_KEY = os.getenv("SECRET_KEY")
+SECRET_KEY = 'uk3_zv-o5vq$pu=k@vytmizvemdw6=uo)kdf44a*p0c^a)bm6k'
 
 # SECURITY WARNING: don't run with debug turned on in production!
 #DEBUG = os.getenv("DJANGO_DEBUG", "False") == "True"
@@ -31,6 +32,12 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 AUTH_USER_MODEL = 'library_web.User'
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://8413774a052a40c1a862e2e7ab86d001.vfs.cloud9.us-east-1.amazonaws.com',
+    'https://*.elasticbeanstalk.com',
+    'http://*.elasticbeanstalk.com',
+]
 
 # Application definition
 
