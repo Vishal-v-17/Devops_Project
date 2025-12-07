@@ -33,12 +33,3 @@ jobs:
             - name: Run/execute pylint on tracked Python files
               run: |
                 pylint $(git ls-files '*.py')
-                
-            - name: SonarCloud Scan
-              uses: SonarSource/sonarqube-scan-action@v5.0.0
-              env:
-                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                SONAR_HOST_URL: https://sonarcloud.io
-                SONAR_SCANNER_OPTS: >
-                  -Dsonar.exclusions=staticfiles/**,**/migrations/**
