@@ -1,0 +1,44 @@
+[MASTER]
+ignore=migrations
+ignore-patterns=^.*\.pyc$
+load-plugins=pylint_django
+
+[MESSAGES CONTROL]
+disable=
+    C0103,  # invalid-name (Project name, migration name)
+    C0114,  # missing-module-docstring
+    C0115,  # missing-class-docstring
+    C0116,  # missing-function-docstring
+    C0301,  # line-too-long (migrations often have long auto-generated lines)
+    E0401,  # import-error (Django dynamic imports)
+    W0212,  # protected-access (_meta)
+    E1101,  # no-member (Django ORM false positives)
+    R0903,  # too-few-public-methods (Django models)
+    R0801   # code duplicate (migrations duplicate code)
+
+[TYPECHECK]
+ignored-modules=
+    django,
+    django.db,
+    django.db.models,
+    django.contrib,
+    library_web
+
+ignored-classes=ModelBase,ForeignKey,ManyToManyField,CharField,TextField
+generated-members=id,title,objects,doesnotexist,DoesNotExist
+
+[FORMAT]
+max-line-length=120
+good-names=i,j,k,ex,pk,id
+
+[IMPORTS]
+known-standard-library=uuid
+known-third-party=django
+known-first-party=library_web,Library_project
+
+[DESIGN]
+max-args=10
+max-locals=25
+max-branches=20
+max-statements=100
+max-attributes=15
