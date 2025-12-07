@@ -68,7 +68,7 @@ class EBooksModel(models.Model):
 
     def __str__(self):
         """returning the ebook data"""
-        return f"{self.id}"
+        return str(self.title)
 
 class BorrowRecord(models.Model):
     """Creating a eBook borrow details"""
