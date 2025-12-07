@@ -33,3 +33,15 @@ jobs:
             - name: Run/execute pylint on tracked Python files
               run: |
                 pylint $(git ls-files '*.py')
+                
+            - name: SonarCloud Scan
+              uses: SonarSource/sonarcloud-github-action@master
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+              with:
+                args: >
+                  -Dsonar.projectKey=Vishal-v-17_Devops_Project
+                  -Dsonar.organization=vishal-v-17
+                  -Dsonar.sources=.
+                  -Dsonar.python.version=3.9
