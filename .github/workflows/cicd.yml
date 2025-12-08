@@ -11,7 +11,7 @@ permissions:
 
 jobs:
     # ==============================
-    # 1️⃣ CI JOB (LINT + TEST + SONARCLOUD)
+    #  CI JOB (LINT + TEST + SONARCLOUD)
     # ==============================
     ci:        # <<< CHANGED from "lint" → "ci"
         runs-on: ubuntu-latest
@@ -92,7 +92,7 @@ jobs:
 
 
     # ===========================================================
-    # 2️⃣ CD JOB — DEPLOY TO AWS EB (elibrary / dev-env)
+    #  CD JOB — DEPLOY TO AWS EB (elibrary / dev-env)
     # ===========================================================
     deploy:
         needs: ci          # <<< now correct
