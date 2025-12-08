@@ -303,7 +303,6 @@ class AddBookViewTest(TestCase):
         """Test POST request with valid data."""
         self.client.login(username='admin', password='adminpass123')
 
-        # Create a proper image file
         image = create_test_image()
 
         data = {
@@ -311,16 +310,14 @@ class AddBookViewTest(TestCase):
             'author': 'New Author',
             'subtitle': 'New Subtitle',
             'category': 'Education',
-            'rating': '5',  # Must be integer
+            'rating': '5',
             'description': 'Test description',
             'image': image
         }
-        _ = self.client.post(self.url, data, format='multipart')
+        self.client.post(self.url, data, format='multipart')
 
-        # Check if book was created
         book_exists = EBooksModel.objects.filter(title='New Book').exists()
-
-        self.assertTrue(book_exists, "Book was not created - check form validation")
+        self.assertTrue(book_exists)
 
 
 class BorrowBookViewTest(TestCase):
@@ -361,32 +358,24 @@ class BorrowBookViewTest(TestCase):
         """Test POST request with valid data."""
         self.client.login(username='testuser', password='testpass123')
         data = {
-            'student_id': 'x12345678',  # Must start with 'x' and contain digits
+            'student_id': 'x12345678',
             'return_date': (date.today() + timedelta(days=7)).strftime('%Y-%m-%d')
         }
         response = self.client.post(self.url, data)
 
-        # Debug: print form errors if any
-        if response.status_code == 200 and 'form' in response.context:
-            if response.context['form'].errors:
-                print(f"Borrow form errors: {response.context['form'].errors}")
-
         self.assertEqual(response.status_code, 200)
-        # Check if borrow record was created
-        record_exists = BorrowRecord.objects.filter(book=self.book, student_id='x12345678').exists()
 
-        if not record_exists:
-            print(f"Borrow record not created. Response status: {response.status_code}")
-            if 'form' in response.context:
-                print(f"Form errors: {response.context['form'].errors}")
-
-        self.assertTrue(record_exists, "Borrow record was not created")
+        record_exists = BorrowRecord.objects.filter(
+            book=self.book,
+            student_id='x12345678'
+        ).exists()
+        self.assertTrue(record_exists)
 
         if record_exists:
             self.book.refresh_from_db()
-            # Check if book status was updated
             borrow_exists = BorrowRecord.objects.filter(
-                book=self.book, actual_return_date__isnull=True
+                book=self.book,
+                actual_return_date__isnull=True
             ).exists()
             if borrow_exists:
                 self.assertTrue(self.book.is_borrowed)
@@ -396,7 +385,6 @@ class BorrowBookViewTest(TestCase):
         """Test borrowing an already borrowed book."""
         self.client.login(username='testuser', password='testpass123')
 
-        # Create active borrow record
         BorrowRecord.objects.create(
             book=self.book,
             student_id='x12345678',
@@ -404,16 +392,11 @@ class BorrowBookViewTest(TestCase):
             return_date=date.today() + timedelta(days=7)
         )
 
-        # The view tries to redirect to 'book_detail' which doesn't exist in your URLs
-        # Instead of testing the redirect, we'll use try-except to catch the error
-        # and verify that the book is indeed borrowed
         try:
-            _ = self.client.get(self.url)
+            self.client.get(self.url)
         except NoReverseMatch:
-            # Expected to fail due to missing 'book_detail' URL
             pass
 
-        # Verify the borrow record exists (which is what matters)
         self.assertTrue(
             BorrowRecord.objects.filter(
                 book=self.book,
@@ -565,26 +548,13 @@ class EditBookViewTest(TestCase):
             'author': 'Updated Author',
             'subtitle': 'Updated Subtitle',
             'category': 'Fiction',
-            'rating': '5',  # Must be integer
+            'rating': '5',
             'description': 'Updated description'
         }
-        response = self.client.post(self.url, data)
+        self.client.post(self.url, data)
 
-        # Debug: check for form errors
-        if response.status_code == 200 and 'form' in response.context:
-            if response.context['form'].errors:
-                print(f"Edit form errors: {response.context['form'].errors}")
-
-        # Check if book was updated
         self.book.refresh_from_db()
-
-        if self.book.title != 'Updated Book':
-            print(f"Book was not updated. Response status: {response.status_code}")
-            if 'form' in response.context:
-                print(f"Form is valid: {response.context['form'].is_valid()}")
-                print(f"Form errors: {response.context['form'].errors}")
-
-        self.assertEqual(self.book.title, 'Updated Book', "Book title was not updated")
+        self.assertEqual(self.book.title, 'Updated Book')
 
 
 class DeleteBookViewTest(TestCase):
@@ -703,4 +673,3 @@ class SearchBooksViewTest(TestCase):
         response = self.client.get(self.url, {'q': 'NonexistentBook'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['books']), 0)
-        
