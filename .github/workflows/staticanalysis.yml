@@ -4,11 +4,9 @@ on:
         branches: [ "main" ]
     pull_request:
         branches: [ "main" ]
-
 # Follow the least privilege security principle for the GITHUB TOKEN
 permissions:
     contents: read
-
 jobs:
     lint:
         runs-on: ubuntu-latest
@@ -16,7 +14,7 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v4
               with:
-                fetch-depth: 0  # Shallow clones should be disabled for better analysis
+                fetch-depth: 0  # Required for SonarCloud
             
             - name: Set up Python
               uses: actions/setup-python@v5
@@ -34,32 +32,19 @@ jobs:
             
             - name: Run/execute pylint on tracked Python files
               run: |
-                pylint $(git ls-files '*.py') || true
+                pylint $(git ls-files '*.py')
             
             - name: Run Django tests with coverage
               run: |
                 coverage run --source='library_web' --omit='*/tests.py,*/migrations/*,*/__init__.py' manage.py test library_web
             
-            - name: Generate coverage reports
+            - name: Generate coverage.xml for SonarCloud
               run: |
                 coverage xml -o coverage.xml
-                coverage report -m
-            
-            - name: Display coverage summary
-              run: |
-                echo "Coverage Report:"
                 coverage report
             
-            - name: Upload coverage artifact
-              uses: actions/upload-artifact@v4
-              with:
-                name: coverage-report
-                path: |
-                  coverage.xml
-                  htmlcov/
-            
-            - name: SonarQube Scan
-              uses: SonarSource/sonarqube-scan-action@v4.0.0
+            - name: SonarCloud Scan
+              uses: SonarSource/sonarqube-scan-action@v5.0.0
               with:
                 args: >
                   -Dsonar.projectKey=Vishal-v-17_Devops_Project
