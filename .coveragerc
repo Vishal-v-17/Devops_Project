@@ -1,0 +1,52 @@
+# Coverage.py configuration file
+# Documentation: https://coverage.readthedocs.io/en/latest/config.html
+
+[run]
+# Source code to measure
+source = library_web
+
+# Files to omit from coverage measurement
+omit = 
+    */tests.py
+    */test_*.py
+    */__init__.py
+    */migrations/*
+    */admin.py
+    manage.py
+    */settings.py
+    */wsgi.py
+    */asgi.py
+    */apps.py
+
+# Branch coverage
+branch = True
+
+[report]
+# Precision for coverage percentage
+precision = 2
+
+# Show missing lines in report
+show_missing = True
+
+# Skip files with 100% coverage
+skip_covered = False
+
+# Ignore errors for missing source files
+ignore_errors = True
+
+# Fail if coverage is below threshold
+fail_under = 0
+
+# Sort the report
+sort = Cover
+
+[html]
+# Directory for HTML report
+directory = htmlcov
+
+# Title for HTML report
+title = Library Web Coverage Report
+
+[xml]
+# Output file for XML report
+output = coverage.xml
