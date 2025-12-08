@@ -12,65 +12,62 @@ permissions:
   contents: read
 
 jobs:
+  # ===========================================================
+  # 1️⃣ CI JOB — RUN TESTS, COVERAGE, SONARCLOUD, PACKAGE APP
+  # ===========================================================
   ci:
     runs-on: ubuntu-latest
     
     env:
       GITHUB_ACTIONS: true
       PYTEST_CURRENT_TEST: true
-      DJANGO_SECRET_KEY: ${{ secrets.DJANGO_SECRET_KEY }}
-      DJANGO_SETTINGS_MODULE: CakeApp.settings
-      STRIPE_SECRET_KEY: sk_test_mock_key
-      STRIPE_PUBLISHABLE_KEY: pk_test_mock_key
+
+      DJANGO_SETTINGS_MODULE: Library_project.settings
+      DJANGO_SECRET_KEY: dummy-secret-for-ci
       AWS_ACCESS_KEY_ID: test_access_key
       AWS_SECRET_ACCESS_KEY: test_secret_key
       AWS_DEFAULT_REGION: us-east-1
-      AWS_STORAGE_BUCKET_NAME: test-bucket
-    
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Setup Python 3.11
+
+      - name: Setup Python 3.9
         uses: actions/setup-python@v5
         with:
-          python-version: "3.11"
+          python-version: "3.9"
           cache: 'pip'
-      
+
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
           pip install pytest pytest-cov pytest-django
-      
+
       - name: Run migrations
         run: python manage.py migrate --noinput
-      
+
       - name: Run tests with coverage
         run: |
-          pytest --cov=. --cov-report=xml:coverage.xml --cov-report=term-missing -v
-      
-      - name: Verify coverage file exists
+          pytest --cov=library_web --cov-report=xml:coverage.xml --cov-report=term-missing -v
+
+      - name: Check coverage file exists
         run: |
-          echo "=== Checking coverage.xml ==="
-          if [ -f "coverage.xml" ]; then
-            echo "✓ coverage.xml exists"
-            echo "File size: $(du -h coverage.xml | cut -f1)"
-            grep 'filename=' coverage.xml | grep -E 'CakeApp|appCakeDelivery' | head -10
-          else
-            echo "✗ coverage.xml not found!"
+          if [ ! -f coverage.xml ]; then
+            echo "❌ coverage.xml missing!"
             exit 1
           fi
-      
+          echo "✓ coverage.xml OK"
+
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
         with:
           file: ./coverage.xml
           fail_ci_if_error: false
         continue-on-error: true
-      
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
         env:
@@ -78,17 +75,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           args: >
-            -Dsonar.projectKey=SushanthBangera-Cloud_Cake-App-DevopsSec-
-            -Dsonar.organization=sushanthbangera-cloud
+            -Dsonar.projectKey=YourSonarProjectKey
+            -Dsonar.organization=YourSonarOrg
+            -Dsonar.sources=library_web
+            -Dsonar.python.coverage.reportPaths=coverage.xml
             -Dsonar.verbose=true
         continue-on-error: true
-      
-      - name: Display SonarCloud Results
-        if: always()
-        run: |
-          echo "=== SonarCloud Analysis Complete ==="
-          echo "Check results at: https://sonarcloud.io/project/overview?id=SushanthBangera-Cloud_Cake-App-DevopsSec-"
-      
+
       - name: Build deployment package
         run: |
           zip -r app.zip . \
@@ -97,51 +90,44 @@ jobs:
             -x "**/__pycache__/*" \
             -x ".git/*" \
             -x ".github/*" \
-            -x "*.pyc" \
-            -x "*.egg-info/*" \
-            -x ".scannerwork/*" \
             -x "*.pytest_cache/*" \
-            -x "htmlcov/*" \
             -x "*.coverage" \
-            -x "coverage.xml" \
             -x "db.sqlite3"
-      
+
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v4
         with:
           name: deploy-zip
           path: ./app.zip
-          retention-days: 30
 
-  # ----------------------------------------------------
-  # 2️⃣ CD JOB — DEPLOY elibrary / dev-env
-  # ----------------------------------------------------
+
+  # ===========================================================
+  # 2️⃣ CD JOB — DEPLOY TO AWS EB (elibrary / dev-env)
+  # ===========================================================
   deploy:
     needs: ci
     runs-on: ubuntu-latest
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
-    environment:
-      name: production
+    if: github.ref == 'refs/heads/main'
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Download deployment artifact
+      - name: Download artifact
         uses: actions/download-artifact@v4
         with:
           name: deploy-zip
           path: .
 
-      - name: Unzip deployment package
+      - name: Unzip
         run: unzip -o app.zip -d deploy
 
-      - name: Setup Python 3.11
+      - name: Setup Python 3.9
         uses: actions/setup-python@v5
         with:
-          python-version: '3.11'
+          python-version: "3.9"
 
-      - name: Install AWS CLI and EB CLI
+      - name: Install AWS CLI + EB CLI
         run: |
           python -m pip install --upgrade pip
           pip install awscli awsebcli
@@ -162,90 +148,45 @@ jobs:
           
           ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
           S3_BUCKET="elasticbeanstalk-us-east-1-${ACCOUNT_ID}"
-          VERSION_LABEL="v-${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)-$(date +%s)"
-          
+
           APP_NAME="elibrary"
           ENV_NAME="dev-env"
-          
-          echo "Deployment Info:"
-          echo "Version: ${VERSION_LABEL}"
-          echo "App: ${APP_NAME}"
-          echo "Env: ${ENV_NAME}"
 
-          echo "=== Checking if environment exists ==="
-          if ! aws elasticbeanstalk describe-environments \
-            --environment-names "$ENV_NAME" \
-            --query "Environments[0].EnvironmentName" \
-            --output text 2>/dev/null | grep -q "$ENV_NAME"; then
-            echo "❌ Environment '${ENV_NAME}' not found!"
-            exit 1
-          fi
-          
-          echo "Environment found ✓"
-          
-          echo "Creating deployment package..."
-          zip -r ../deploy.zip . \
-            -x "*.git*" \
-            -x "*.scannerwork*" \
-            -x "*.pytest_cache*" \
-            -x "*__pycache__*" \
-            -x "*.coverage*" \
-            -x "htmlcov/*"
-          
-          echo "Uploading version to S3..."
-          aws s3 cp ../deploy.zip "s3://${S3_BUCKET}/${APP_NAME}/${VERSION_LABEL}.zip"
-          
+          VERSION_LABEL="v-${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
+
+          echo "Creating S3 deployment package..."
+          zip -r ../deploy.zip .
+
+          echo "Uploading to S3..."
+          aws s3 cp ../deploy.zip s3://${S3_BUCKET}/${APP_NAME}/${VERSION_LABEL}.zip
+
           echo "Creating application version..."
           aws elasticbeanstalk create-application-version \
-            --application-name "$APP_NAME" \
-            --version-label "${VERSION_LABEL}" \
-            --source-bundle S3Bucket="${S3_BUCKET}",S3Key="${APP_NAME}/${VERSION_LABEL}.zip"
-          
-          CURRENT_VERSION=$(aws elasticbeanstalk describe-environments \
-            --application-name "$APP_NAME" \
-            --environment-names "$ENV_NAME" \
-            --query "Environments[0].VersionLabel" --output text)
-          
-          echo "current_version=${CURRENT_VERSION}" >> $GITHUB_OUTPUT
-          
-          echo "Deploying new version..."
+            --application-name $APP_NAME \
+            --version-label $VERSION_LABEL \
+            --source-bundle S3Bucket=$S3_BUCKET,S3Key=${APP_NAME}/${VERSION_LABEL}.zip
+
+          echo "Deploying to environment..."
           aws elasticbeanstalk update-environment \
-            --application-name "$APP_NAME" \
-            --environment-name "$ENV_NAME" \
-            --version-label "${VERSION_LABEL}"
-          
+            --application-name $APP_NAME \
+            --environment-name $ENV_NAME \
+            --version-label $VERSION_LABEL
+
+          echo "Waiting for deployment..."
           aws elasticbeanstalk wait environment-updated \
-            --application-name "$APP_NAME" \
-            --environment-names "$ENV_NAME"
-          
+            --application-name $APP_NAME \
+            --environment-name $ENV_NAME
+
           ENV_URL=$(aws elasticbeanstalk describe-environments \
-            --application-name "$APP_NAME" \
-            --environment-names "$ENV_NAME" \
-            --query "Environments[0].CNAME" --output text)
-          
-          ENV_HEALTH=$(aws elasticbeanstalk describe-environments \
-            --application-name "$APP_NAME" \
-            --environment-names "$ENV_NAME" \
-            --query "Environments[0].Health" --output text)
-          
+            --application-name $APP_NAME \
+            --environment-names $ENV_NAME \
+            --query "Environments[0].CNAME" \
+            --output text)
+
           echo "url=http://${ENV_URL}" >> $GITHUB_OUTPUT
-          echo "health=${ENV_HEALTH}" >> $GITHUB_OUTPUT
 
-      - name: Health check
-        id: health-check
+      - name: Deployment Summary
         run: |
-          HEALTH="${{ steps.deploy.outputs.health }}"
-          if [ "$HEALTH" != "Green" ] && [ "$HEALTH" != "Yellow" ]; then
-            echo "❌ Deployment health check failed: $HEALTH"
-            exit 1
-          fi
-          echo "Deployment health check passed ✓"
-
-      - name: Deployment summary
-        if: always()
-        run: |
-          echo "## Deployment Summary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Application**: elibrary" >> $GITHUB_STEP_SUMMARY
-          echo "- **Environment**: dev-env" >> $GITHUB_STEP_SUMMARY
-          echo "- **URL**: http://${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
-          echo "- **Health**: ${{ steps.deploy.outputs.health }}" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** dev-env" >> $GITHUB_STEP_SUMMARY
+          echo "**URL:** http://${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
