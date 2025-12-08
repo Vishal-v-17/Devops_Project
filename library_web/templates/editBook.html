@@ -14,24 +14,93 @@
     <!-- Navbar -->
     {% include 'navigation.html' %}
 
+<div class="container py-5 d-flex justify-content-center">
+    <div class="card shadow-lg border-0 p-5" style="max-width: 650px; width: 100%; border-radius: 20px;">
+
+        <h3 class="text-center mb-4 fw-bold" style="color: #1e3c72;">Edit Book</h3>
+
+        <form method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+
+    <!-- Title -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Title</label>
+        {{ form.title }}
+    </div>
+
+    <!-- Subtitle -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Subtitle</label>
+        {{ form.subtitle }}
+    </div>
+
+    <!-- Author -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Author</label>
+        {{ form.author }}
+    </div>
+
+    <!-- Publisher -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Publisher</label>
+        {{ form.publisher }}
+    </div>
+
+    <!-- Description -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Description</label>
+        <textarea name="description" class="form-control modern-input" rows="4" 
+                  placeholder="Enter full description" required></textarea>
+    </div>
+
+    <!-- Category -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Category</label>
+        {{ form.category }}
+    </div>
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Rating</label>
+            {{ form.rating }}
+    </div>
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Front Cover Image</label>
+        <div class="p-3 border rounded-4">
+            {{ form.image }}
+        </div>
+    </div>
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Book PDF</label>
+        <div class="p-3 border rounded-4">
+            <input type="file" name="book_pdf" class="form-control" accept="application/pdf">
+        </div>
+    </div>
+
+    <!-- Book Audio Upload -->
+    <div class="mb-4">
+        <label class="form-label fw-semibold" style="font-size: 1rem; color: #333;">Book Audio</label>
+        <div class="p-3 border rounded-4">
+            <input type="file" name="book_audio" class="form-control" accept="audio/*">
+        </div>
+    </div>
+
+    <button type="submit" class="btn w-100 py-2 fw-semibold" 
+        style="background: linear-gradient(90deg, #1e3c72, #2a5298); 
+               color: white; 
+               border-radius: 50px; 
+               font-size: 1.1rem;">
+        Save Changes
+    </button>
+    <a href="{% url 'home' %}">Cancel</a>
+
+</form>
 
 
-    <!-- Add Book -->
-    <h2>Edit Book</h2>
-
-      <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          {{ form.as_p }}
-          <button class="btn btn-primary">Save Changes</button>
-      </form>
-
-      <a href="{% url 'home' %}">Cancel</a>
+    </div>
+</div>
 
 
 
     
-    <!-- Footer -->
-    {% include 'footer.html' %} 
 
   </body>
 </html>
