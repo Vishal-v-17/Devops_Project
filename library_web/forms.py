@@ -76,7 +76,7 @@ class EBooksForm(forms.ModelForm):
         model = EBooksModel
         fields = [
             "title", "description", "image", "category", "subtitle",
-            "author", "publisher", "rating", "book_pdf", "book_audio"
+            "author", "publisher", "rating"
         ]
         labels = {
             "title": "Book Title",
@@ -107,13 +107,11 @@ class EBooksForm(forms.ModelForm):
         self.fields["category"].widget.attrs.update(
             {"class": "form-control", "placeholder": "Select category"}
         )
-        self.fields["book_pdf"].widget.attrs.update({"class": "form-control"})
-        self.fields["book_audio"].widget.attrs.update({"class": "form-control"})
         self.fields["rating"].widget.attrs.update({"class": "form-control"})
 
         # Required fields logic
         for name, field in self.fields.items():
-            field.required = name not in ["book_pdf", "book_audio", "publisher"]
+            field.required = name not in ["publisher"]
 
 
 class BorrowForm(forms.ModelForm):

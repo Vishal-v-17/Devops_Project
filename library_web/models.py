@@ -56,8 +56,6 @@ class EBooksModel(models.Model):
     image = models.ImageField(upload_to="books/")
     rating = models.IntegerField(default=0)
     borrow_count = models.PositiveIntegerField(default=0)
-    book_pdf = models.FileField(upload_to="pdfs/", null=True, blank=True)
-    book_audio = models.FileField(upload_to="audio/", null=True, blank=True)
     is_borrowed = models.BooleanField(default=False)
 
     def save(self, *args, **kwargs):
