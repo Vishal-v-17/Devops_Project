@@ -51,15 +51,15 @@ jobs:
                 coverage report
             
             - name: Upload coverage artifact
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v4
               with:
                 name: coverage-report
                 path: |
                   coverage.xml
                   htmlcov/
             
-            - name: SonarCloud Scan
-              uses: SonarSource/sonarcloud-scan-action@v3.0.0
+            - name: SonarQube Scan
+              uses: SonarSource/sonarqube-scan-action@v4.0.0
               with:
                 args: >
                   -Dsonar.projectKey=Vishal-v-17_Devops_Project
@@ -73,16 +73,6 @@ jobs:
                   -Dsonar.coverage.exclusions=**/tests.py,**/test_*.py,**/migrations/**,**/__init__.py
                   -Dsonar.generatedSources=staticfiles/admin/**
                   -Dsonar.cpd.exclusions=library_web/tests.py,templates/**,migrations/**
-                  -Dsonar.python.coverage.reportPaths=coverage.xml
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                
-            - name: Run Django tests with coverage
-              run: |
-                coverage run --source='library_web' --omit='*/tests.py,*/migrations/*,*/__init__.py' manage.py test library_web
-            
-            - name: Generate coverage reports
-              run: |
-                coverage xml -o coverage.xml
-                coverage report -m
