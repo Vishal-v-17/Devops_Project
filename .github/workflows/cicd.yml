@@ -10,6 +10,9 @@ permissions:
     contents: read
 
 jobs:
+    # ==============================
+    # 1️⃣ LINT + TEST + SONARCLOUD
+    # ==============================
     lint:
         runs-on: ubuntu-latest
         steps:
@@ -32,7 +35,7 @@ jobs:
             - name: Set PYTHONPATH so pylint can find Django project
               run: echo "PYTHONPATH=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
             
-            - name: Run/execute pylint on tracked Python files
+            - name: Run Pylint
               run: |
                 pylint $(git ls-files '*.py')
             
@@ -65,23 +68,26 @@ jobs:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build deployment package
-        run: |
-          zip -r app.zip . \
-            -x "env/*" \
-            -x "venv/*" \
-            -x "**/__pycache__/*" \
-            -x ".git/*" \
-            -x ".github/*" \
-            -x "*.pytest_cache/*" \
-            -x "*.coverage" \
-            -x "db.sqlite3"
+            # ==============================
+            # Build deployable ZIP package
+            # ==============================
+            - name: Build deployment package
+              run: |
+                zip -r app.zip . \
+                  -x "env/*" \
+                  -x "venv/*" \
+                  -x "**/__pycache__/*" \
+                  -x ".git/*" \
+                  -x ".github/*" \
+                  -x "*.pytest_cache/*" \
+                  -x "*.coverage" \
+                  -x "db.sqlite3"
 
-      - name: Upload deployment artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: deploy-zip
-          path: ./app.zip
+            - name: Upload deployment artifact
+              uses: actions/upload-artifact@v4
+              with:
+                name: deploy-zip
+                path: ./app.zip
 
 
   # ===========================================================
