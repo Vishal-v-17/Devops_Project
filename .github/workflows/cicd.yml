@@ -10,9 +10,6 @@ permissions:
     contents: read
 
 jobs:
-    # ============================================
-    # 1️⃣ LINT + TEST + COVERAGE + SONARCLOUD (CI)
-    # ============================================
     lint:
         runs-on: ubuntu-latest
         steps:
