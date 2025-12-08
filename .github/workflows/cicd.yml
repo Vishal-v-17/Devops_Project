@@ -140,7 +140,7 @@ jobs:
                 S3_BUCKET="elasticbeanstalk-us-east-1-${ACCOUNT_ID}"
 
                 APP_NAME="elibrary"
-                ENV_NAME="dev-env"
+                ENV_NAME="Elibrary-env"
 
                 VERSION_LABEL="v-${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
 
