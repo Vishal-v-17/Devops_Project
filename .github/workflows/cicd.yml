@@ -48,6 +48,9 @@ jobs:
               run: |
                 coverage xml -o coverage.xml
                 coverage report
+            - name: Check Quality Gate
+              uses: sonarsource/sonarqube-quality-gate-action@v1
+              continue-on-error: true
             
             - name: SonarCloud Scan
               uses: SonarSource/sonarqube-scan-action@v5.0.0
@@ -68,6 +71,7 @@ jobs:
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
 
             # ==============================
             # Build deployable ZIP package
