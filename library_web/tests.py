@@ -703,3 +703,4 @@ class SearchBooksViewTest(TestCase):
         response = self.client.get(self.url, {'q': 'NonexistentBook'})
         self.assertEqual(response.status_code, 200)
         self.assertEqual(len(response.context['books']), 0)
+        
