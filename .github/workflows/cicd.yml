@@ -11,10 +11,11 @@ permissions:
 
 jobs:
     # ==============================
-    # 1️⃣ LINT + TEST + SONARCLOUD
+    # 1️⃣ CI JOB (LINT + TEST + SONARCLOUD)
     # ==============================
-    lint:
+    ci:        # <<< CHANGED from "lint" → "ci"
         runs-on: ubuntu-latest
+
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
@@ -90,92 +91,92 @@ jobs:
                 path: ./app.zip
 
 
-  # ===========================================================
-  # 2️⃣ CD JOB — DEPLOY TO AWS EB (elibrary / dev-env)
-  # ===========================================================
-  deploy:
-    needs: ci
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
+    # ===========================================================
+    # 2️⃣ CD JOB — DEPLOY TO AWS EB (elibrary / dev-env)
+    # ===========================================================
+    deploy:
+        needs: ci          # <<< now correct
+        runs-on: ubuntu-latest
+        if: github.ref == 'refs/heads/main'
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+        steps:
+            - name: Checkout code
+              uses: actions/checkout@v4
 
-      - name: Download artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: deploy-zip
-          path: .
+            - name: Download artifact
+              uses: actions/download-artifact@v4
+              with:
+                name: deploy-zip
+                path: .
 
-      - name: Unzip
-        run: unzip -o app.zip -d deploy
+            - name: Unzip
+              run: unzip -o app.zip -d deploy
 
-      - name: Setup Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
+            - name: Setup Python 3.9
+              uses: actions/setup-python@v5
+              with:
+                python-version: "3.9"
 
-      - name: Install AWS CLI + EB CLI
-        run: |
-          python -m pip install --upgrade pip
-          pip install awscli awsebcli
+            - name: Install AWS CLI + EB CLI
+              run: |
+                python -m pip install --upgrade pip
+                pip install awscli awsebcli
 
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-          aws-region: us-east-1
+            - name: Configure AWS credentials
+              uses: aws-actions/configure-aws-credentials@v4
+              with:
+                aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+                aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+                aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+                aws-region: us-east-1
 
-      - name: Deploy to Elastic Beanstalk
-        id: deploy
-        working-directory: ./deploy
-        run: |
-          set -e
-          
-          ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
-          S3_BUCKET="elasticbeanstalk-us-east-1-${ACCOUNT_ID}"
+            - name: Deploy to Elastic Beanstalk
+              id: deploy
+              working-directory: ./deploy
+              run: |
+                set -e
+                
+                ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
+                S3_BUCKET="elasticbeanstalk-us-east-1-${ACCOUNT_ID}"
 
-          APP_NAME="elibrary"
-          ENV_NAME="dev-env"
+                APP_NAME="elibrary"
+                ENV_NAME="dev-env"
 
-          VERSION_LABEL="v-${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
+                VERSION_LABEL="v-${{ github.run_number }}-$(echo ${{ github.sha }} | cut -c1-7)"
 
-          echo "Creating S3 deployment package..."
-          zip -r ../deploy.zip .
+                echo "Creating S3 deployment package..."
+                zip -r ../deploy.zip .
 
-          echo "Uploading to S3..."
-          aws s3 cp ../deploy.zip s3://${S3_BUCKET}/${APP_NAME}/${VERSION_LABEL}.zip
+                echo "Uploading to S3..."
+                aws s3 cp ../deploy.zip s3://${S3_BUCKET}/${APP_NAME}/${VERSION_LABEL}.zip
 
-          echo "Creating application version..."
-          aws elasticbeanstalk create-application-version \
-            --application-name $APP_NAME \
-            --version-label $VERSION_LABEL \
-            --source-bundle S3Bucket=$S3_BUCKET,S3Key=${APP_NAME}/${VERSION_LABEL}.zip
+                echo "Creating application version..."
+                aws elasticbeanstalk create-application-version \
+                  --application-name $APP_NAME \
+                  --version-label $VERSION_LABEL \
+                  --source-bundle S3Bucket=$S3_BUCKET,S3Key=${APP_NAME}/${VERSION_LABEL}.zip
 
-          echo "Deploying to environment..."
-          aws elasticbeanstalk update-environment \
-            --application-name $APP_NAME \
-            --environment-name $ENV_NAME \
-            --version-label $VERSION_LABEL
+                echo "Deploying to environment..."
+                aws elasticbeanstalk update-environment \
+                  --application-name $APP_NAME \
+                  --environment-name $ENV_NAME \
+                  --version-label $VERSION_LABEL
 
-          echo "Waiting for deployment..."
-          aws elasticbeanstalk wait environment-updated \
-            --application-name $APP_NAME \
-            --environment-name $ENV_NAME
+                echo "Waiting for deployment..."
+                aws elasticbeanstalk wait environment-updated \
+                  --application-name $APP_NAME \
+                  --environment-name $ENV_NAME
 
-          ENV_URL=$(aws elasticbeanstalk describe-environments \
-            --application-name $APP_NAME \
-            --environment-names $ENV_NAME \
-            --query "Environments[0].CNAME" \
-            --output text)
+                ENV_URL=$(aws elasticbeanstalk describe-environments \
+                  --application-name $APP_NAME \
+                  --environment-names $ENV_NAME \
+                  --query "Environments[0].CNAME" \
+                  --output text)
 
-          echo "url=http://${ENV_URL}" >> $GITHUB_OUTPUT
+                echo "url=http://${ENV_URL}" >> $GITHUB_OUTPUT
 
-      - name: Deployment Summary
-        run: |
-          echo "### Deployment Complete" >> $GITHUB_STEP_SUMMARY
-          echo "**Environment:** dev-env" >> $GITHUB_STEP_SUMMARY
-          echo "**URL:** http://${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
+            - name: Deployment Summary
+              run: |
+                echo "### Deployment Complete" >> $GITHUB_STEP_SUMMARY
+                echo "**Environment:** dev-env" >> $GITHUB_STEP_SUMMARY
+                echo "**URL:** http://${{ steps.deploy.outputs.url }}" >> $GITHUB_STEP_SUMMARY
