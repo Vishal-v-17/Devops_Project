@@ -153,6 +153,5 @@ AWS_S3_FILE_OVERWRITE = False
 AWS_DEFAULT_ACL = None
 AWS_QUERYSTRING_AUTH = False
 
-if 'test' in sys.argv:
-    DEFAULT_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
-    MEDIA_ROOT = BASE_DIR / 'test_media'
+
+DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
