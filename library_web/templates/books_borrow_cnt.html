@@ -48,63 +48,64 @@
 
         <div class="card shadow-lg border-0 rounded-4 modern-card">
 
-            <div class="text-center p-3">
-                <img src="{{ book.image.url }}" alt="{{ book.title }}"
-                     class="img-fluid rounded card-img-top-modern">
-            </div>
-
             <div class="card-body px-4 pb-4 text-center">
 
+                <!-- Book Image -->
+                <div class="mb-3">
+                    <img src="{{ book.image.url }}" alt="{{ book.title }}" 
+                         class="img-fluid rounded" style="max-height: 220px; object-fit: cover;">
+                </div>
+            
+                <!-- Book Details -->
                 <h5 class="fw-bold book-title">{{ book.title }}</h5>
-
+            
+                {% if book.subtitle %}
+                    <p class="text-muted"><em>{{ book.subtitle }}</em></p>
+                {% endif %}
+            
                 <p><strong>Author:</strong> {{ book.author }}</p>
-                <p><strong>Rate:</strong> {{ book.rating }}</p>
-
-                {% if book.book_pdf %}
-                <a href="{{ book.book_pdf.url }}" download class="btn btn-outline-primary w-100 mb-2">
-                    📄 Download PDF
-                </a>
-                {% endif %}
-
-                {% if book.book_audio %}
-                <a href="{{ book.book_audio.url }}" download class="btn btn-outline-success w-100 mb-2">
-                    🎧 Download Audio
-                </a>
-                {% endif %}
-
+                <p><strong>Publisher:</strong> {{ book.publisher }}</p>
+                <p><strong>Category:</strong> {{ book.category }}</p>
+            
+                <p><strong>Description:</strong> {{ book.description }}</p>
+            
+                <p><strong>Rating:</strong> ⭐ {{ book.rating }} / 5</p>
+            
+                <!-- Borrow / Taken -->
                 {% if book.is_borrowed %}
                     <div class="mb-3" style="width: 100%;">
-                        <button class="btn w-100 fw-semibold py-2 modern-main-btn"
+                        <button class="btn w-100 fw-semibold py-2 modern-main-btn mb-3"
                                 style="background: gray; cursor: not-allowed;" disabled>
                             Taken
                         </button>
                     </div>
-
+            
                     {% if request.user.is_superuser %}
                     <div class="mb-3" style="width: 100%;">
-                        <a href="{% url 'return_book' book.id %}"
-                        class="btn btn-warning w-100 fw-semibold py-2">
-                        Return Book
+                        <a href="{% url 'return_book' book.id %}" 
+                           class="btn btn-warning w-100 fw-semibold py-2 mb-3">
+                            Return Book
                         </a>
                     </div>
                     {% endif %}
+            
                 {% else %}
                     <a href="{% url 'borrow_book' book.id %}"
                        class="btn w-100 fw-semibold py-2 mb-3 modern-main-btn">
                         Borrow
                     </a>
                 {% endif %}
-
+            
+                <!-- Admin Controls -->
                 {% if request.user.is_superuser %}
                 <div class="d-flex justify-content-between gap-3">
                     <a href="{% url 'editBook' book.id %}"
                        class="btn btn-warning fw-semibold py-2 w-50 modern-btn">Edit</a>
-
+            
                     <a href="{% url 'deleteBook' book.id %}"
                        class="btn btn-danger fw-semibold py-2 w-50 modern-btn">Delete</a>
                 </div>
                 {% endif %}
-
             </div>
 
         </div>
