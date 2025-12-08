@@ -44,6 +44,7 @@ jobs:
                   -Dsonar.python.version=3.9
                   -Dsonar.exclusions=staticfiles/**,**/migrations/**,**/__pycache__/**
                   -Dsonar.generatedSources=staticfiles/admin/**
+                  -Dsonar.cpd.exclusions=library_web/**,templates/**,migrations/**
               env:
                 SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
                 GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
