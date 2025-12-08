@@ -11,12 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
+    
+    - name: Cache pip dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
     
     - name: Install dependencies
       run: |
@@ -26,41 +35,59 @@ jobs:
     - name: Run Tests
       run: |
         python manage.py test
+      env:
+        DJANGO_SETTINGS_MODULE: Devops_Project.settings
     
-    - name: Run Linting
+    - name: Run Pylint
+      continue-on-error: true
       run: |
         pip install pylint
-        pylint library_web/ || true
+        pylint library_web/ --exit-zero
 
   deploy:
     needs: test
     runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
     
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v4
     
     - name: Set up Python
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: '3.9'
     
     - name: Install EB CLI
       run: |
-        pip install awsebcli
+        pip install awsebcli --upgrade
     
     - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v2
+      uses: aws-actions/configure-aws-credentials@v4
       with:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ secrets.AWS_REGION }}
     
+    - name: Verify AWS Identity
+      run: |
+        aws sts get-caller-identity
+    
+    - name: Initialize EB
+      run: |
+        eb init ${{ secrets.EB_APPLICATION_NAME }} \
+          --region ${{ secrets.AWS_REGION }} \
+          --platform python-3.9
+    
+    - name: Select EB Environment
+      run: |
+        eb use ${{ secrets.EB_ENVIRONMENT_NAME }}
+    
     - name: Deploy to Elastic Beanstalk
       run: |
-        eb init ${{ secrets.EB_APPLICATION_NAME }} -r ${{ secrets.AWS_REGION }} -p python-3.9
-        eb use ${{ secrets.EB_ENVIRONMENT_NAME }}
         eb deploy --staged
     
     - name: Get Application URL
       run: |
-        echo "Application deployed to: $(eb status | grep CNAME | awk '{print $2}')"
+        echo "✅ Application deployed successfully!"
+        echo "🌐 URL: $(eb status | grep CNAME | awk '{print $2}')"
