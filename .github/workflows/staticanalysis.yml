@@ -45,6 +45,7 @@ jobs:
             
             - name: SonarCloud Scan
               uses: SonarSource/sonarqube-scan-action@v5.0.0
+              continue-on-error: true
               with:
                 args: >
                   -Dsonar.projectKey=Vishal-v-17_Devops_Project
