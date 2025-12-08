@@ -1,86 +1,72 @@
 name: CI + CD Pipeline
 
 on:
-  push:
-    branches:
-      - main
-      - master
-  pull_request:
+    push:
+        branches: [ "main" ]
+    pull_request:
+        branches: [ "main" ]
 
 permissions:
-  actions: read
-  contents: read
+    contents: read
 
 jobs:
-  # ===========================================================
-  # 1️⃣ CI JOB — RUN TESTS, COVERAGE, SONARCLOUD, PACKAGE APP
-  # ===========================================================
-  ci:
-    runs-on: ubuntu-latest
-    
-    env:
-      GITHUB_ACTIONS: true
-      PYTEST_CURRENT_TEST: true
-
-      DJANGO_SETTINGS_MODULE: Library_project.settings
-      DJANGO_SECRET_KEY: dummy-secret-for-ci
-      AWS_ACCESS_KEY_ID: test_access_key
-      AWS_SECRET_ACCESS_KEY: test_secret_key
-      AWS_DEFAULT_REGION: us-east-1
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Python 3.9
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.9"
-          cache: 'pip'
-
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-          pip install pytest pytest-cov pytest-django
-
-      - name: Run migrations
-        run: python manage.py migrate --noinput
-
-      - name: Run tests with coverage
-        run: |
-          pytest --cov=library_web --cov-report=xml:coverage.xml --cov-report=term-missing -v
-
-      - name: Check coverage file exists
-        run: |
-          if [ ! -f coverage.xml ]; then
-            echo "❌ coverage.xml missing!"
-            exit 1
-          fi
-          echo "✓ coverage.xml OK"
-
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v4
-        with:
-          file: ./coverage.xml
-          fail_ci_if_error: false
-        continue-on-error: true
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarcloud-github-action@v3
-        env:
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          args: >
-            -Dsonar.projectKey=YourSonarProjectKey
-            -Dsonar.organization=YourSonarOrg
-            -Dsonar.sources=library_web
-            -Dsonar.python.coverage.reportPaths=coverage.xml
-            -Dsonar.verbose=true
-        continue-on-error: true
+    # ============================================
+    # 1️⃣ LINT + TEST + COVERAGE + SONARCLOUD (CI)
+    # ============================================
+    lint:
+        runs-on: ubuntu-latest
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+              with:
+                fetch-depth: 0  # Required for SonarCloud
+            
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                python-version: "3.9"
+            
+            - name: Install dependencies
+              run: |
+                python -m pip install --upgrade pip
+                if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+                pip install pylint coverage pytest pytest-django pytest-cov
+            
+            - name: Set PYTHONPATH so pylint can find Django project
+              run: echo "PYTHONPATH=${GITHUB_WORKSPACE}" >> $GITHUB_ENV
+            
+            - name: Run/execute pylint on tracked Python files
+              run: |
+                pylint $(git ls-files '*.py')
+            
+            - name: Run Django tests with coverage
+              run: |
+                coverage run --source='library_web' --omit='*/tests.py,*/migrations/*,*/__init__.py' manage.py test library_web
+            
+            - name: Generate coverage.xml for SonarCloud
+              run: |
+                coverage xml -o coverage.xml
+                coverage report
+            
+            - name: SonarCloud Scan
+              uses: SonarSource/sonarqube-scan-action@v5.0.0
+              continue-on-error: true
+              with:
+                args: >
+                  -Dsonar.projectKey=Vishal-v-17_Devops_Project
+                  -Dsonar.organization=vishal-v-17
+                  -Dsonar.sources=library_web
+                  -Dsonar.tests=library_web
+                  -Dsonar.test.inclusions=**/*tests.py,**/test_*.py
+                  -Dsonar.python.version=3.9
+                  -Dsonar.python.coverage.reportPaths=coverage.xml
+                  -Dsonar.exclusions=staticfiles/**,**/migrations/**,**/__pycache__/**,**/tests.py,**/test_*.py
+                  -Dsonar.coverage.exclusions=**/tests.py,**/test_*.py,**/migrations/**,**/__init__.py
+                  -Dsonar.generatedSources=staticfiles/admin/**
+                  -Dsonar.cpd.exclusions=library_web/tests.py,templates/**,migrations/**
+              env:
+                SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+                GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build deployment package
         run: |
